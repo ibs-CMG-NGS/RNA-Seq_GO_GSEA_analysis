@@ -1,0 +1,20 @@
+# Include documentation and configuration files
+include README.md
+include LICENSE
+include requirements.txt
+
+# Include configuration examples
+recursive-include configs *.yaml *.txt
+
+# Include reference data directory structure
+graft ref
+
+# Exclude compiled Python files
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+
+# Exclude data and output directories
+prune data/processed
+prune output
+prune results

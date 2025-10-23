@@ -93,7 +93,16 @@ pip install -r requirements.txt
 
 # 4. Install the utility package dependency
 pip install git+https://github.com/parkgilbong/YG_utils_analysis.git@main
+
+# 5. (Optional) Install package in development mode for CLI commands
+pip install -e .
 ```
+
+After installation with `-e .`, you can use convenient command aliases:
+- `rnaseq-data-load` instead of `python src/analysis/data_loading.py`
+- `rnaseq-filter` instead of `python src/analysis/filtering.py`
+- `rnaseq-batch` instead of `python src/analysis/batch_runner.py`
+- And more! See CLI Reference section for complete list.
 
 ### Conda Installation (Alternative)
 
@@ -143,30 +152,22 @@ Each notebook provides:
 Run individual analysis steps from the command line.
 
 ```bash
-# 1. Load and standardize your data
-python src/analysis/data_loading.py \
-  --config configs/GO_pipeline_Shank2.yaml \
-  --config-section data_loading
+# Method A: Using direct Python commands
+python src/analysis/data_loading.py --config configs/GO_pipeline_Shank2.yaml --config-section data_loading
+python src/analysis/filtering.py --config configs/GO_pipeline_Shank2.yaml --config-section filtering
+python src/analysis/volcano.py --config configs/GO_pipeline_Shank2.yaml --config-section volcano
+python src/analysis/go_enrich.py --config configs/GO_pipeline_Shank2.yaml --config-section go_enrich
+python src/analysis/report_generation.py --config configs/GO_pipeline_Shank2.yaml --config-section report
 
-# 2. Filter for significant DEGs
-python src/analysis/filtering.py \
-  --config configs/GO_pipeline_Shank2.yaml \
-  --config-section filtering
+# Method B: Using convenience scripts (recommended for Linux/Mac)
+./scripts/run_go_pipeline.sh configs/GO_pipeline_Shank2.yaml
 
-# 3. Generate volcano plot
-python src/analysis/volcano.py \
-  --config configs/GO_pipeline_Shank2.yaml \
-  --config-section volcano
-
-# 4. Run GO enrichment
-python src/analysis/go_enrich.py \
-  --config configs/GO_pipeline_Shank2.yaml \
-  --config-section go_enrich
-
-# 5. Generate report
-python src/analysis/report_generation.py \
-  --config configs/GO_pipeline_Shank2.yaml \
-  --config-section report
+# Method C: Using installed CLI commands (after 'pip install -e .')
+rnaseq-data-load --config configs/GO_pipeline_Shank2.yaml --config-section data_loading
+rnaseq-filter --config configs/GO_pipeline_Shank2.yaml --config-section filtering
+rnaseq-volcano --config configs/GO_pipeline_Shank2.yaml --config-section volcano
+rnaseq-go-enrich --config configs/GO_pipeline_Shank2.yaml --config-section go_enrich
+rnaseq-report --config configs/GO_pipeline_Shank2.yaml --config-section report
 ```
 
 ### Option 3: Batch Processing
@@ -174,8 +175,11 @@ python src/analysis/report_generation.py \
 Process multiple samples automatically - ideal for HPC environments.
 
 ```bash
-# Run entire pipeline for all samples defined in manifest
+# Method A: Direct Python command
 python src/analysis/batch_runner.py --manifest configs/batch_manifest_H2O2.yaml
+
+# Method B: Using installed CLI (after 'pip install -e .')
+rnaseq-batch --manifest configs/batch_manifest_H2O2.yaml
 ```
 
 The batch runner will:
@@ -183,6 +187,24 @@ The batch runner will:
 - Generate sample-specific output directories
 - Create temporary configurations per sample
 - Log progress and errors for debugging
+
+### Helper Scripts
+
+The `scripts/` directory contains convenient wrapper scripts:
+
+```bash
+# Run complete GO pipeline
+./scripts/run_go_pipeline.sh configs/GO_pipeline_Shank2.yaml
+
+# Run complete GSEA pipeline
+./scripts/run_gsea_pipeline.sh configs/GSEA_pipeline.yaml
+```
+
+These scripts:
+- Run all pipeline steps automatically
+- Show progress for each step
+- Exit immediately if any step fails
+- Work on Linux, macOS, and Windows (via Git Bash/WSL)
 
 ## 📖 Usage Guide
 
@@ -363,25 +385,32 @@ samples:
 
 ## 🖥️ CLI Reference
 
-All analysis modules support a consistent CLI interface:
+All analysis modules support a consistent CLI interface with three usage methods:
 
 ```bash
+# Method 1: Direct Python module execution
 python src/analysis/<module>.py --config <config.yaml> --config-section <section>
+
+# Method 2: Installed CLI commands (after 'pip install -e .')
+rnaseq-<command> --config <config.yaml> --config-section <section>
+
+# Method 3: Helper scripts
+./scripts/run_go_pipeline.sh <config.yaml>
 ```
 
 ### Core Analysis Modules
 
-| Module | Purpose | Key Parameters |
-|--------|---------|----------------|
-| `data_loading.py` | Load and standardize input data | `--excels`, `--sheets`, `--gene-col` |
-| `filtering.py` | Filter DEGs by thresholds | `--padj-cutoff`, `--log2fc-cutoff`, `--direction` |
-| `volcano.py` | Generate volcano plots | `--padj-cutoff`, `--log2fc-cutoff`, `--xlim`, `--ylim` |
-| `go_enrich.py` | Run GO enrichment | `--genes-file`, `--background-csv`, `--obo`, `--gaf` |
-| `go_barplot.py` | Visualize GO results | `--in-csv`, `--out-png`, `--top-terms` |
-| `gsea_analysis.py` | Run GSEA | `--mode`, `--gene-sets`, `--min-size`, `--max-size` |
-| `gsea_plot.py` | Visualize GSEA results | `--results-dir`, `--top-terms` |
-| `report_generation.py` | Generate HTML report | All previous outputs |
-| `batch_runner.py` | Batch processing | `--manifest` |
+| Python Module | CLI Command | Purpose | Key Parameters |
+|---------------|-------------|---------|----------------|
+| `data_loading.py` | `rnaseq-data-load` | Load and standardize input data | `--excels`, `--sheets`, `--gene-col` |
+| `filtering.py` | `rnaseq-filter` | Filter DEGs by thresholds | `--padj-cutoff`, `--log2fc-cutoff`, `--direction` |
+| `volcano.py` | `rnaseq-volcano` | Generate volcano plots | `--padj-cutoff`, `--log2fc-cutoff`, `--xlim`, `--ylim` |
+| `go_enrich.py` | `rnaseq-go-enrich` | Run GO enrichment | `--genes-file`, `--background-csv`, `--obo`, `--gaf` |
+| `go_barplot.py` | `rnaseq-go-barplot` | Visualize GO results | `--in-csv`, `--out-png`, `--top-terms` |
+| `gsea_analysis.py` | `rnaseq-gsea` | Run GSEA | `--mode`, `--gene-sets`, `--min-size`, `--max-size` |
+| `gsea_plot.py` | `rnaseq-gsea-plot` | Visualize GSEA results | `--results-dir`, `--top-terms` |
+| `report_generation.py` | `rnaseq-report` | Generate HTML report | All previous outputs |
+| `batch_runner.py` | `rnaseq-batch` | Batch processing | `--manifest` |
 
 ### Common CLI Patterns
 
@@ -452,6 +481,10 @@ echo "Pipeline complete!"
 ```
 RNA-Seq_GO_GSEA_analysis/
 │
+├── scripts/                      # Convenience wrapper scripts
+│   ├── run_go_pipeline.sh       # Run complete GO pipeline
+│   └── run_gsea_pipeline.sh     # Run complete GSEA pipeline
+│
 ├── configs/                      # Configuration files
 │   ├── GO_pipeline_*.yaml       # GO analysis configurations
 │   ├── GSEA_pipeline.yaml       # GSEA configuration
@@ -502,7 +535,10 @@ RNA-Seq_GO_GSEA_analysis/
 │   ├── go-basic.obo            # GO ontology
 │   └── goa_*.gaf               # GO annotations
 │
+├── setup.py                      # Package installation configuration
+├── MANIFEST.in                   # Package data files specification
 ├── requirements.txt              # Python dependencies
+├── CONTRIBUTING.md               # Contribution guidelines
 ├── .gitignore                   # Git ignore patterns
 └── README.md                    # This file
 ```
