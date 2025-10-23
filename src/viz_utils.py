@@ -1,10 +1,43 @@
+"""
+Visualization utilities for RNA-Seq analysis results.
+
+This module provides high-quality plotting functions for common RNA-Seq
+visualizations including heatmaps and dot plots for differential expression
+and pathway enrichment results.
+
+Functions:
+    plot_heatmap: Create annotated heatmaps for expression data
+    plot_dot_plot: Create publication-quality dot plots with p-value and fold change
+"""
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
 import re
+from typing import Optional, Dict
+from matplotlib.backends.backend_pdf import PdfPages
 
-def plot_heatmap(pivot_df, title, output_path, pdf=None):
+def plot_heatmap(pivot_df: pd.DataFrame, title: str, output_path: str, 
+                 pdf: Optional[PdfPages] = None) -> None:
+    """
+    Create an annotated heatmap for expression or enrichment data.
+    
+    Automatically selects an appropriate colormap based on the data type:
+    - 'viridis' for p-values
+    - 'coolwarm' for expression values (centered at 0)
+    
+    Args:
+        pivot_df: DataFrame in pivot table format (genes x conditions)
+        title: Plot title
+        output_path: Path to save PNG output
+        pdf: Optional PdfPages object to also save to PDF
+        
+    Example:
+        >>> import pandas as pd
+        >>> data = pd.DataFrame({"gene": ["A", "B"], "cond1": [1.5, -2], "cond2": [0.5, -1]})
+        >>> pivot = data.set_index("gene")
+        >>> plot_heatmap(pivot, "Expression Changes", "heatmap.png")
+    """
     plt.figure(figsize=(14, 6))
     sns.heatmap(pivot_df, annot=True, cmap='viridis' if 'p_val' in title else 'coolwarm', center=0 if 'avg' in title else 0.05)
     plt.title(title)
@@ -14,12 +47,36 @@ def plot_heatmap(pivot_df, title, output_path, pdf=None):
         pdf.savefig(plt.gcf(), bbox_inches='tight') # Save to PDF, also ensuring everything is saved
     plt.close(plt.gcf()) # Close the current figure object
 
-def plot_dot_plot(log2fc_data, pval_data, title, plot_options: dict, save_path=None, pdf=None, gene_order=None):
+def plot_dot_plot(log2fc_data: pd.DataFrame, pval_data: pd.DataFrame, title: str, 
+                  plot_options: dict, save_path: Optional[str] = None, 
+                  pdf: Optional[PdfPages] = None, gene_order: Optional[list] = None) -> None:
     """
-    log2FC와 p-value를 사용하여 Dot Plot을 생성합니다.
-    - 색상: log2FC (bwr 컬러맵)
-    - 크기: -log10(p-value)를 범주화하여 표현
-    - y축 순서: gene_order 리스트에 따라 정렬
+    Create a publication-quality dot plot showing log2FC and p-value data.
+    
+    This function creates a dot plot where:
+    - Color represents log2 fold change (blue-white-red colormap)
+    - Dot size represents statistical significance (categorized p-values)
+    - Genes can be ordered according to a custom list
+    
+    Args:
+        log2fc_data: DataFrame with genes as rows and conditions as columns, containing log2FC values
+        pval_data: DataFrame with same structure as log2fc_data, containing adjusted p-values
+        title: Plot title
+        plot_options: Dictionary with plot customization options including:
+            - figure_size: tuple of (width, height)
+            - color_norm: tuple of (min, max) for color scaling
+            - size_map: dict mapping p-value categories to dot sizes
+            - dot_outline_color: color for dot borders
+            - colorbar settings: width, height_ratio, offsets, ticks
+        save_path: Optional path to save PNG output
+        pdf: Optional PdfPages object to also save to PDF
+        gene_order: Optional list specifying the order of genes on y-axis
+        
+    Example:
+        >>> log2fc = pd.DataFrame({"gene": ["A", "B"], "cond1": [1.5, -2], "cond2": [0.5, -1]}).set_index("gene")
+        >>> pval = pd.DataFrame({"gene": ["A", "B"], "cond1": [0.001, 0.05], "cond2": [0.01, 0.1]}).set_index("gene")
+        >>> options = {"figure_size": (10, 8), "color_norm": (-2, 2)}
+        >>> plot_dot_plot(log2fc, pval, "DEG Analysis", options, "dotplot.png")
     """
     # 데이터 재구성
     log2fc_flat = log2fc_data.stack().reset_index(name='log2FC')
