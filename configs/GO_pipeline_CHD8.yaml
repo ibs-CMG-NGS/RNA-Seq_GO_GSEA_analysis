@@ -1,0 +1,59 @@
+# Single YAML with per-step sections (edit paths as needed)
+ROOT_DIR: "output/go_analysis_results" # This will be the default output directory
+
+data_loading:
+  excel_path: "data/processed/H2O2/Acute_1D_Genename.xlsx"
+  sheets: "PFC_Male" # or "all"
+  gene_col: "HGNC symbol"
+  log2fc_col: "log2FC"
+  padj_col: "adjusted p-value"
+  csv_file: "standardized.csv"
+
+filtering:
+  in_csv_file: "standardized.csv"
+  mode: thresholds  # thresholds | gene_list
+  padj_cutoff: 0.05
+  log2fc_cutoff: 0
+  direction: both   # up | down | both
+  # gene_list_file: "genes_of_interest.txt"
+  out_csv_file: "filtered.csv"
+
+volcano:
+  in_csv_file: "standardized.csv"
+  out_png_file: "volcano.png"
+  padj_cutoff: 0.05
+  log2fc_cutoff: 0
+  xlim: [-3.1, 3.1]
+  ylim: [-0.5, 10.5]
+  # annotate_file: configs/genes_of_interest.txt
+  max_labels: 30
+
+go_enrich:
+  # EITHER provide genes_file OR filtered_csv
+  # genes_file: configs/genes_of_interest.txt
+  filtered_csv: "filtered.csv"
+  # (REQUIRED) Path to the background gene list file.
+  # This should be a CSV file with a "gene" column containing all genes
+  # expressed in the experiment, typically the output of the data_loading step.
+  background_csv: "standardized.csv"
+  obo: "ref/go-basic.obo"
+  gaf: "ref/goa_human.gaf"
+  alpha: 0.05
+  out_csv: "goea_results.csv"
+
+go_barplot:
+  in_csv_file: "goea_results.csv"
+  out_png_file: "go_barplot.png"
+  top_n: 10
+  namespaces: ["BP", "MF", "CC"]  # or "ALL"
+
+report:
+  standardized_csv_file: "standardized.csv"
+  filtered_csv_file: "filtered.csv"
+  volcano_png_file: "volcano.png"
+  goea_csv_file: "goea_results.csv" # Optional input
+  go_barplot_png_file: "go_barplot.png"
+  out_html_file: "report.html"
+  title: "GO Analysis Report"
+  sample_name: "CHD8_PFC_Male"
+  author: "YGKim"

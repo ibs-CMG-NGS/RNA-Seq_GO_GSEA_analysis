@@ -1,0 +1,43 @@
+# This file orchestrates a batch run of the GO pipeline for multiple samples.
+
+# A base config file that provides default parameters for all pipeline steps.
+# Paths in this file (like obo_file, gaf_file) should be relative to the
+# project root.
+base_config_path: "configs/GO_pipeline_H2O2.yaml"
+
+# The sequence of analysis steps to run for each sample.
+# You can add, remove, or reorder steps here without changing the script.
+# The names correspond to the analysis scripts in 'src/analysis/'.
+pipeline_steps:
+  - data_loading
+  - filtering
+  - volcano
+  - go_enrich
+  - go_barplot
+  - report_generation
+
+# A root directory to store all outputs from this batch run.
+# A subfolder will be created for each sample.
+output_root: "output/go_analysis_results/batch_GO_run_{timestamp}"
+
+# List of samples to process. Each sample will run the full pipeline.
+samples:
+  - name: "Acute_1D_Genename"
+    # Overrides for this specific sample.
+    # These will be merged with the base_config.
+    overrides:      
+      data_loading: 
+        excel_path: "data/processed/H2O2/Acute_1D_Genename.xlsx" # relative to project root
+        sheets: "Acute_1D_Genename"
+      report:
+        title: "GO Analysis Report for Acute_1D"
+        sample_name: "Acute_1D"
+
+  - name: "Acute_3D_Genename"
+    overrides:      
+      data_loading: 
+        excel_path: "data/processed/H2O2/Acute_3D_Genename.xlsx" # relative to project root
+        sheets: "Acute_3D_Genename"
+      report:
+        title: "GO Analysis Report for Acute_3D"
+        sample_name: "Acute_3D"

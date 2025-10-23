@@ -1,0 +1,59 @@
+project: "Shank2_RNAseq_GO"
+organism: "Human"
+species: "hsapiens"
+id_type: "symbol"
+convert_ids: false
+
+input:
+  excel: 
+    path: "data/processed/Shank2 RNA-seq result.xlsx"
+    sheet: "all"              # "all" | sheet name(str) | index(int) | [name/index list]
+    sheet_index_base: 0       # 0=파이썬식(첫 시트=0), 1=엑셀식(첫 시트=1)
+    gene_col: "HGNC symbol"
+    log2fc_col: "log2FC"
+    padj_col: "adjusted p-value"
+  gene_list_file: "data/genes.txt"
+
+filtering:
+  adj_p_cutoff: 0.05     # 예: 0.05
+  log2fc_cutoff: 0.0     # 예: 1.0
+  direction: both        # up/down/both
+
+analysis:
+  backend: "goatools"      # 또는 "enrichr"
+  gene_sets:
+    - "GO_Biological_Process_2023"
+    - "GO_Molecular_Function_2023"
+    - "GO_Cellular_Component_2023"
+  cutoff: 0.05          # 유의성 기준 (예: 0.05)
+  top_terms: 20 
+  outdir: "output/go_analysis_results"
+  combine_sheets: "none"      # "none" | "union" | "intersection"
+
+goatools:
+  go_obo: "ref/go-basic.obo"      # local file path
+  go_gaf: "ref/goa_human.gaf"     # local file path (in-house mirror/pre-distribution recommended)
+  namespace: "all"                # all | BP | MF | CC
+  fdr_method: "fdr_bh"            # 다중검정 보정 방식
+  background: "all_sheets"        # "all_sheets" | "per_sheet" | "custom"
+  background_file: ""             # background:"custom"일 때만 사용 (유전자 리스트 txt)
+  taxon: "9606"            # 인간=9606, 마우스=10090 등
+
+plotting:
+  make_barplot: true
+  make_dotplot: true
+  volcano:
+    up_color: "red"
+    down_color: "blue"
+    other_color: "lightgrey"
+  barplot:
+    BP: "blue"
+    CC: "red"
+    MF: "green"
+    other: "grey"
+  combined_barplot_top: 5
+
+logging:
+  dir: "logs"               # ← 로그 폴더 경로 (필수 권장)
+  # filename: "go_analysis.log"  # (선택) 미지정 시 타임스탬프 파일명 자동 사용
+  level: "INFO"                # (선택) DEBUG | INFO | WARNING | ERROR | CRITICAL

@@ -1,0 +1,6 @@
+#### go_enrich.yaml
+obo: ../ref/go-basic.obo
+gaf: ../ref/goa_human.gaf
+alpha: 0.05 # 유의성 기준
+mt: fdr_bh # 다중검정 보정 방식
+out_csv: data/processed/goea_results.csv

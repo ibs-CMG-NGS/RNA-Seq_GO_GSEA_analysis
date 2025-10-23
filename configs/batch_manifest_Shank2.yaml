@@ -1,0 +1,67 @@
+# This file orchestrates a batch run of the GO pipeline for multiple samples.
+
+# A base config file that provides default parameters for all pipeline steps.
+# Paths in this file (like obo_file, gaf_file) should be relative to the
+# project root.
+base_config_path: "configs/GO_pipeline_Shank2.yaml"
+
+# The sequence of analysis steps to run for each sample.
+# You can add, remove, or reorder steps here without changing the script.
+# The names correspond to the analysis scripts in 'src/analysis/'.
+pipeline_steps:
+  - data_loading
+  - filtering
+  - volcano
+  - go_enrich
+  - go_barplot
+  - report_generation
+
+# A root directory to store all outputs from this batch run.
+# A subfolder will be created for each sample.
+output_root: "output/go_analysis_results/batch_GO_run_{timestamp}"
+
+# List of samples to process. Each sample will run the full pipeline.
+samples:
+  - name: "Shank2_3W-HT"
+    # Overrides for this specific sample.
+    # These will be merged with the base_config.
+    overrides:      
+      data_loading: 
+        excel_path: "data/processed/Shank2/Shank2_RNA-seq_result.xlsx" # relative to project root
+        sheets: "3W-HT"
+      report:
+        title: "GO Analysis Report for Shank2_3W-HT"
+        sample_name: "Shank2_3W-HT"
+
+  - name: "Shank2_3W-HM"
+    # Overrides for this specific sample.
+    # These will be merged with the base_config.
+    overrides:      
+      data_loading: 
+        excel_path: "data/processed/Shank2/Shank2_RNA-seq_result.xlsx" # relative to project root
+        sheets: "3W-HM"
+      report:
+        title: "GO Analysis Report for Shank2_3W-HM"
+        sample_name: "Shank2_3W-HM"
+  
+  - name: "Shank2_12W-HT"
+    # Overrides for this specific sample.
+    # These will be merged with the base_config.
+    overrides:      
+      data_loading: 
+        excel_path: "data/processed/Shank2/Shank2_RNA-seq_result.xlsx" # relative to project root
+        sheets: "12W-HT"
+      report:
+        title: "GO Analysis Report for Shank2_12W-HT"
+        sample_name: "Shank2_12W-HT"
+
+  - name: "Shank2_12W-HM"
+    # Overrides for this specific sample.
+    # These will be merged with the base_config.
+    overrides:      
+      data_loading: 
+        excel_path: "data/processed/Shank2/Shank2_RNA-seq_result.xlsx" # relative to project root
+        sheets: "12W-HM"
+      report:
+        title: "GO Analysis Report for Shank2_12W-HM"
+        sample_name: "Shank2_12W-HM"

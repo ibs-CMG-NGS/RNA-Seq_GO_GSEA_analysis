@@ -1,0 +1,5 @@
+#### go_barplot.yaml
+in_csv: data/processed/run-001/goea_results.csv
+out_png: data/processed/run-001/go_barplot.png
+top_n: 10
+namespaces: [BP, MF, CC]       # 또는 "ALL"
