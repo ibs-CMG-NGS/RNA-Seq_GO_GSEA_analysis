@@ -658,6 +658,8 @@ Place reference files in the `ref/` directory.
 
 ### Tutorials and Documentation
 
+- **[API Reference](docs/API_REFERENCE.md)** - Complete Python API documentation for programmatic usage
+- **[Contributing Guide](CONTRIBUTING.md)** - Development setup and contribution guidelines
 - [GO Enrichment Analysis Tutorial](docs/GO_tutorial.md) *(coming soon)*
 - [GSEA Analysis Guide](docs/GSEA_guide.md) *(coming soon)*
 - [Batch Processing Best Practices](docs/batch_processing.md) *(coming soon)*
