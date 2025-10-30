@@ -21,6 +21,7 @@ rule all:
 
 # Rule 1: Data loading
 rule data_loading:
+    conda: CONDA_ENV
     output:
         csv = f"{OUTPUT_DIR}/standardized.csv"
     params:
@@ -38,6 +39,7 @@ rule data_loading:
 
 # Rule 2: GSEA analysis
 rule gsea_analysis:
+    conda: CONDA_ENV
     input:
         csv = f"{OUTPUT_DIR}/standardized.csv"
     output:
@@ -58,6 +60,7 @@ rule gsea_analysis:
 
 # Rule 3: GSEA plotting
 rule gsea_plot:
+    conda: CONDA_ENV
     input:
         report = f"{OUTPUT_DIR}/GSEA_Report.xlsx"
     output:
