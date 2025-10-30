@@ -1,0 +1,157 @@
+"""
+Snakemake workflow for GO enrichment analysis pipeline
+"""
+
+# Configuration
+configfile: "workflow/config/go_config.yaml"
+
+# Define the output directory
+OUTPUT_DIR = config.get("ROOT_DIR", "output/go_analysis")
+ROOT_DIR = config.get("ROOT_DIR", "output/go_analysis")
+
+# Define all output files from the pipeline
+rule all:
+    input:
+        standardized = f"{OUTPUT_DIR}/standardized.csv",
+        filtered = f"{OUTPUT_DIR}/filtered.csv",
+        filtered_up = f"{OUTPUT_DIR}/filtered_up_genes.txt",
+        filtered_down = f"{OUTPUT_DIR}/filtered_down_genes.txt",
+        volcano = f"{OUTPUT_DIR}/volcano.png",
+        go_results_all = f"{OUTPUT_DIR}/goea_results_all.csv",
+        go_results_up = f"{OUTPUT_DIR}/goea_results_up.csv",
+        go_results_down = f"{OUTPUT_DIR}/goea_results_down.csv",
+        go_barplot_all = f"{OUTPUT_DIR}/go_barplot_all.png",
+        go_barplot_up = f"{OUTPUT_DIR}/go_barplot_up.png",
+        go_barplot_down = f"{OUTPUT_DIR}/go_barplot_down.png",
+        report = f"{OUTPUT_DIR}/report.html"
+
+# Rule 1: Data loading and standardization
+rule data_loading:
+    output:
+        csv = f"{OUTPUT_DIR}/standardized.csv"
+    params:
+        config = "workflow/config/go_config.yaml",
+        section = "data_loading"
+    log:
+        f"{OUTPUT_DIR}/logs/data_loading.log"
+    shell:
+        """
+        python src/analysis/data_loading.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """
+
+# Rule 2: Filtering DEGs
+rule filtering:
+    input:
+        csv = f"{OUTPUT_DIR}/standardized.csv"
+    output:
+        filtered = f"{OUTPUT_DIR}/filtered.csv",
+        up_genes = f"{OUTPUT_DIR}/filtered_up_genes.txt",
+        down_genes = f"{OUTPUT_DIR}/filtered_down_genes.txt"
+    params:
+        config = "workflow/config/go_config.yaml",
+        section = "filtering"
+    log:
+        f"{OUTPUT_DIR}/logs/filtering.log"
+    shell:
+        """
+        python src/analysis/filtering.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """
+
+# Rule 3: Generate volcano plot
+rule volcano:
+    input:
+        csv = f"{OUTPUT_DIR}/standardized.csv"
+    output:
+        plot = f"{OUTPUT_DIR}/volcano.png"
+    params:
+        config = "workflow/config/go_config.yaml",
+        section = "volcano"
+    log:
+        f"{OUTPUT_DIR}/logs/volcano.log"
+    shell:
+        """
+        python src/analysis/volcano.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """
+
+# Rule 4: GO enrichment analysis
+rule go_enrich:
+    input:
+        filtered = f"{OUTPUT_DIR}/filtered.csv",
+        up_genes = f"{OUTPUT_DIR}/filtered_up_genes.txt",
+        down_genes = f"{OUTPUT_DIR}/filtered_down_genes.txt",
+        background = f"{OUTPUT_DIR}/standardized.csv"
+    output:
+        go_all = f"{OUTPUT_DIR}/goea_results_all.csv",
+        go_up = f"{OUTPUT_DIR}/goea_results_up.csv",
+        go_down = f"{OUTPUT_DIR}/goea_results_down.csv"
+    params:
+        config = "workflow/config/go_config.yaml",
+        section = "go_enrich"
+    log:
+        f"{OUTPUT_DIR}/logs/go_enrich.log"
+    shell:
+        """
+        python src/analysis/go_enrich.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """
+
+# Rule 5: GO barplot visualization
+rule go_barplot:
+    input:
+        go_all = f"{OUTPUT_DIR}/goea_results_all.csv",
+        go_up = f"{OUTPUT_DIR}/goea_results_up.csv",
+        go_down = f"{OUTPUT_DIR}/goea_results_down.csv"
+    output:
+        plot_all = f"{OUTPUT_DIR}/go_barplot_all.png",
+        plot_up = f"{OUTPUT_DIR}/go_barplot_up.png",
+        plot_down = f"{OUTPUT_DIR}/go_barplot_down.png"
+    params:
+        config = "workflow/config/go_config.yaml",
+        section = "go_barplot"
+    log:
+        f"{OUTPUT_DIR}/logs/go_barplot.log"
+    shell:
+        """
+        python src/analysis/go_barplot.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """
+
+# Rule 6: Generate HTML report
+rule report_generation:
+    input:
+        standardized = f"{OUTPUT_DIR}/standardized.csv",
+        filtered = f"{OUTPUT_DIR}/filtered.csv",
+        volcano = f"{OUTPUT_DIR}/volcano.png",
+        go_all = f"{OUTPUT_DIR}/goea_results_all.csv",
+        go_up = f"{OUTPUT_DIR}/goea_results_up.csv",
+        go_down = f"{OUTPUT_DIR}/goea_results_down.csv",
+        plot_all = f"{OUTPUT_DIR}/go_barplot_all.png",
+        plot_up = f"{OUTPUT_DIR}/go_barplot_up.png",
+        plot_down = f"{OUTPUT_DIR}/go_barplot_down.png"
+    output:
+        report = f"{OUTPUT_DIR}/report.html"
+    params:
+        config = "workflow/config/go_config.yaml",
+        section = "report"
+    log:
+        f"{OUTPUT_DIR}/logs/report_generation.log"
+    shell:
+        """
+        python src/analysis/report_generation.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """

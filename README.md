@@ -71,18 +71,54 @@ Each module can be:
 ## 🚀 Installation
 
 ### Prerequisites
-- Python 3.8 or higher
-- pip package manager
-- (Optional) Conda for environment management
+- Python 3.9 or higher
+- Conda package manager (recommended for easy setup)
 
-### Standard Installation
+### Recommended Installation with Conda
+
+The easiest way to set up the environment is using the provided `environment.yml` file:
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/ibs-CMG-NGS/RNA-Seq_GO_GSEA_analysis.git
 cd RNA-Seq_GO_GSEA_analysis
 
-# 2. Create and activate a virtual environment (recommended)
+# 2. Create and activate conda environment with all dependencies
+conda env create -f environment.yml
+conda activate rnaseq-analysis
+
+# 3. (Optional) Install package in development mode for CLI commands
+pip install -e .
+```
+
+After installation with `-e .`, you can use convenient command aliases:
+- `rnaseq-data-load` instead of `python src/analysis/data_loading.py`
+- `rnaseq-filter` instead of `python src/analysis/filtering.py`
+- `rnaseq-batch` instead of `python src/analysis/batch_runner.py`
+- And more! See CLI Reference section for complete list.
+
+### Installation for Snakemake Workflows
+
+If you want to use Snakemake for workflow automation (recommended for batch processing):
+
+```bash
+# Create Snakemake environment with all dependencies
+conda env create -f snakemake_environment.yml
+conda activate snakemake_env
+```
+
+This environment includes Snakemake along with all analysis dependencies.
+
+### Alternative Installation (pip + venv)
+
+If you prefer using pip and virtual environments:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/ibs-CMG-NGS/RNA-Seq_GO_GSEA_analysis.git
+cd RNA-Seq_GO_GSEA_analysis
+
+# 2. Create and activate a virtual environment
 python -m venv venv
 source venv/bin/activate  # On Linux/macOS
 # OR
@@ -98,24 +134,6 @@ pip install git+https://github.com/parkgilbong/YG_utils_analysis.git@main
 pip install -e .
 ```
 
-After installation with `-e .`, you can use convenient command aliases:
-- `rnaseq-data-load` instead of `python src/analysis/data_loading.py`
-- `rnaseq-filter` instead of `python src/analysis/filtering.py`
-- `rnaseq-batch` instead of `python src/analysis/batch_runner.py`
-- And more! See CLI Reference section for complete list.
-
-### Conda Installation (Alternative)
-
-```bash
-# Create conda environment
-conda create -n rnaseq-analysis python=3.9
-conda activate rnaseq-analysis
-
-# Install dependencies
-pip install -r requirements.txt
-pip install git+https://github.com/parkgilbong/YG_utils_analysis.git@main
-```
-
 ### Verify Installation
 
 ```bash
@@ -124,6 +142,9 @@ python -c "import pandas, gseapy, goatools; print('Installation successful!')"
 
 # Check CLI tools
 python src/analysis/data_loading.py --help
+
+# If using Snakemake environment, verify Snakemake is available
+snakemake --version
 ```
 
 ## ⚡ Quick Start
@@ -170,9 +191,90 @@ rnaseq-go-enrich --config configs/GO_pipeline_Shank2.yaml --config-section go_en
 rnaseq-report --config configs/GO_pipeline_Shank2.yaml --config-section report
 ```
 
-### Option 3: Batch Processing
+### Option 3: Batch Processing with Snakemake (Recommended)
 
-Process multiple samples automatically - ideal for HPC environments.
+**Snakemake** is a workflow management system that automates the execution of complex data analysis pipelines. It provides superior batch processing capabilities compared to sequential Python scripts.
+
+#### Why Use Snakemake?
+
+- **🔄 Automatic Parallelization**: Run independent samples in parallel automatically
+- **📊 Dependency Tracking**: Only re-run steps when inputs change
+- **🔍 Reproducibility**: Built-in provenance tracking and workflow documentation
+- **⚡ Resource Management**: Efficient allocation of CPU/memory resources
+- **🎯 Error Recovery**: Resume from where pipeline failed without restarting
+- **📈 Scalability**: Seamlessly scale from laptop to HPC clusters
+- **📉 Visualization**: Generate workflow DAGs for understanding pipeline structure
+
+#### Setup Snakemake Environment
+
+```bash
+# Create and activate Snakemake environment
+conda env create -f snakemake_environment.yml
+conda activate snakemake_env
+```
+
+#### Run Batch GO Analysis
+
+```bash
+# Edit workflow/config/batch_go_config.yaml to specify your samples
+# Then run:
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cores 4
+
+# For dry-run (see what will be executed):
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --dry-run
+```
+
+#### Run Single Sample Analysis
+
+```bash
+# GO enrichment analysis
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --cores 1
+
+# GSEA analysis
+snakemake --snakefile workflow/Snakefile_GSEA \
+    --configfile workflow/config/gsea_config.yaml \
+    --cores 1
+```
+
+#### Visualize Workflow
+
+```bash
+# Generate workflow diagram (requires graphviz)
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --dag | dot -Tpng > workflow_dag.png
+```
+
+#### HPC/Cluster Execution
+
+For SLURM clusters:
+
+```bash
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cluster "sbatch --time=02:00:00 --mem=16G --cpus-per-task=1" \
+    --jobs 10
+```
+
+The Snakemake approach will:
+- Process samples in parallel when resources allow
+- Automatically manage dependencies between analysis steps
+- Resume from failure points without re-running completed steps
+- Generate detailed logs for each rule execution
+- Create organized output directories per sample
+- Track which files were generated and when
+
+See the [Workflow README](workflow/README.md) for detailed Snakemake usage instructions.
+
+### Option 4: Batch Processing with Python (Alternative)
+
+For users who prefer Python-based batch processing or don't have Snakemake:
 
 ```bash
 # Method A: Direct Python command
@@ -182,11 +284,14 @@ python src/analysis/batch_runner.py --manifest configs/batch_manifest_H2O2.yaml
 rnaseq-batch --manifest configs/batch_manifest_H2O2.yaml
 ```
 
-The batch runner will:
+The Python batch runner will:
 - Process each sample sequentially
 - Generate sample-specific output directories
 - Create temporary configurations per sample
 - Log progress and errors for debugging
+
+**Note**: While the Python batch runner is simpler, Snakemake offers better performance, 
+error recovery, and scalability for processing multiple samples.
 
 ### Helper Scripts
 
@@ -488,8 +593,20 @@ RNA-Seq_GO_GSEA_analysis/
 ├── configs/                      # Configuration files
 │   ├── GO_pipeline_*.yaml       # GO analysis configurations
 │   ├── GSEA_pipeline.yaml       # GSEA configuration
-│   ├── batch_manifest_*.yaml    # Batch processing manifests
+│   ├── batch_manifest_*.yaml    # Batch processing manifests (for Python batch_runner)
 │   └── genes_of_interest.txt    # Example gene lists
+│
+├── workflow/                     # Snakemake workflow files
+│   ├── Snakefile_GO             # GO analysis workflow
+│   ├── Snakefile_GSEA           # GSEA analysis workflow
+│   ├── Snakefile_batch_GO       # Batch GO analysis workflow
+│   ├── README.md                # Workflow usage documentation
+│   ├── config/                  # Workflow configurations
+│   │   ├── go_config.yaml       # GO workflow config
+│   │   ├── gsea_config.yaml     # GSEA workflow config
+│   │   └── batch_go_config.yaml # Batch GO workflow config
+│   ├── rules/                   # Additional Snakemake rules (optional)
+│   └── scripts/                 # Workflow helper scripts (optional)
 │
 ├── data/                         # Data directory (gitignored)
 │   ├── raw/                     # Raw input files
@@ -537,7 +654,9 @@ RNA-Seq_GO_GSEA_analysis/
 │
 ├── setup.py                      # Package installation configuration
 ├── MANIFEST.in                   # Package data files specification
-├── requirements.txt              # Python dependencies
+├── requirements.txt              # Python dependencies (pip)
+├── environment.yml               # Conda environment specification
+├── snakemake_environment.yml     # Snakemake environment with all dependencies
 ├── CONTRIBUTING.md               # Contribution guidelines
 ├── .gitignore                   # Git ignore patterns
 └── README.md                    # This file
@@ -588,6 +707,8 @@ output/<sample_name>/
 
 ### Batch Processing Output
 
+#### Python Batch Runner
+
 ```
 results/batch_20231023_143022/
 ├── sample1/
@@ -596,6 +717,28 @@ results/batch_20231023_143022/
 │   └── [complete analysis outputs]
 ├── temp_config_sample1.yaml     # Generated configs (for debugging)
 └── temp_config_sample2.yaml
+```
+
+#### Snakemake Batch Processing
+
+```
+results/batch_go_snakemake/
+├── sample1/
+│   ├── standardized.csv
+│   ├── filtered.csv
+│   ├── volcano.png
+│   ├── goea_results_*.csv
+│   ├── go_barplot_*.png
+│   ├── report.html
+│   ├── temp_config.yaml         # Sample-specific config
+│   └── logs/                    # Detailed execution logs
+│       ├── data_loading.log
+│       ├── filtering.log
+│       └── ...
+├── sample2/
+│   └── [complete analysis outputs]
+└── sample3/
+    └── [complete analysis outputs]
 ```
 
 ### HTML Report Contents
