@@ -56,8 +56,11 @@ rule data_loading:
         with open(temp_config_path, 'w') as f:
             yaml.dump(temp_config, f, default_flow_style=False)
         
+        # Create logs directory
+        Path(log[0]).parent.mkdir(parents=True, exist_ok=True)
+        
         # Execute data loading
-        shell(f"python src/analysis/data_loading.py --config {temp_config_path} --config-section data_loading 2>&1 | tee {log}")
+        shell(f"python src/analysis/data_loading.py --config {temp_config_path} --config-section data_loading 2>&1 | tee {log[0]}")
 
 # Rule 2: Filtering for each sample
 rule filtering:

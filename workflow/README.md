@@ -29,21 +29,30 @@ Configuration files are located in `workflow/config/`:
 # Activate Snakemake environment
 conda activate snakemake_env
 
-# Run the GO pipeline
+# Option 1: Using helper script (recommended)
+./workflow/scripts/run_snakemake_go.sh workflow/config/go_config.yaml
+
+# Option 2: Direct Snakemake command
 snakemake --snakefile workflow/Snakefile_GO --configfile workflow/config/go_config.yaml --cores 1
 ```
 
 ### Run GSEA Analysis (Single Sample)
 
 ```bash
-# Run the GSEA pipeline
+# Option 1: Using helper script (recommended)
+./workflow/scripts/run_snakemake_gsea.sh workflow/config/gsea_config.yaml
+
+# Option 2: Direct Snakemake command
 snakemake --snakefile workflow/Snakefile_GSEA --configfile workflow/config/gsea_config.yaml --cores 1
 ```
 
 ### Run Batch GO Analysis (Multiple Samples)
 
 ```bash
-# Run batch processing for all samples defined in batch_go_config.yaml
+# Option 1: Using helper script (recommended)
+./workflow/scripts/run_snakemake_go.sh workflow/config/batch_go_config.yaml --batch
+
+# Option 2: Direct Snakemake command
 snakemake --snakefile workflow/Snakefile_batch_GO --configfile workflow/config/batch_go_config.yaml --cores 4
 ```
 

@@ -1,0 +1,123 @@
+# Template for batch GO analysis configuration
+# Copy this file and modify for your analysis
+#
+# Usage:
+# 1. Copy this file: cp workflow/config/batch_go_config_template.yaml workflow/config/my_batch.yaml
+# 2. Edit my_batch.yaml with your sample information
+# 3. Run: snakemake --snakefile workflow/Snakefile_batch_GO --configfile workflow/config/my_batch.yaml --cores 4
+
+# Output directory for all samples (will be created if it doesn't exist)
+output_root: "results/my_batch_analysis"
+
+# Base configuration applied to all samples
+# These settings are shared across all samples unless overridden
+base_config:
+  # Data loading settings
+  data_loading:
+    gene_col: "Gene Symbol"      # Column name for gene identifiers
+    log2fc_col: "log2FoldChange"  # Column name for log2 fold change
+    padj_col: "padj"              # Column name for adjusted p-value
+    csv_file: "standardized.csv"
+  
+  # Filtering settings
+  filtering:
+    mode: thresholds              # Options: "thresholds" or "gene_list"
+    padj_cutoff: 0.05            # Adjusted p-value threshold
+    log2fc_cutoff: 0             # Log2 fold change threshold (0 = no filtering)
+    direction: both               # Options: "up", "down", or "both"
+    out_csv_file: "filtered.csv"
+    out_up_genes_file: "filtered_up_genes.txt"
+    out_down_genes_file: "filtered_down_genes.txt"
+    in_csv_file: "standardized.csv"
+  
+  # Volcano plot settings
+  volcano:
+    in_csv_file: "standardized.csv"
+    out_png_file: "volcano.png"
+    padj_cutoff: 0.05
+    log2fc_cutoff: 0
+    max_labels: 30                # Maximum number of genes to label
+  
+  # GO enrichment settings
+  go_enrich:
+    filtered_csv: "filtered.csv"
+    up_genes_file: "filtered_up_genes.txt"
+    down_genes_file: "filtered_down_genes.txt"
+    background_csv: "standardized.csv"
+    obo: "ref/go-basic.obo"       # Path to GO ontology file
+    gaf: "ref/goa_mouse.gaf"      # Path to GO annotation file (mouse)
+    gaf_file: "ref/goa_mouse.gaf"
+    taxon: 10090                  # Taxonomy ID (10090=mouse, 9606=human)
+    alpha: 0.05                   # Significance threshold
+    goea_csv_file: "goea_results_all.csv"
+    goea_up_csv_file: "goea_results_up.csv"
+    goea_down_csv_file: "goea_results_down.csv"
+  
+  # GO barplot settings
+  go_barplot:
+    out_png_file: "go_barplot_all.png"
+    out_up_png_file: "go_barplot_up.png"
+    out_down_png_file: "go_barplot_down.png"
+    top_n: 10                     # Number of top GO terms to plot
+    namespaces: ["BP", "MF", "CC"]  # GO categories to include
+  
+  # Report generation settings
+  report:
+    standardized_csv_file: "standardized.csv"
+    filtered_csv_file: "filtered.csv"
+    volcano_png_file: "volcano.png"
+    goea_csv_file: "goea_results_all.csv"
+    go_barplot_png_file: "go_barplot_all.png"
+    goea_up_csv_file: "goea_results_up.csv"
+    go_up_barplot_png_file: "go_barplot_up.png"
+    goea_down_csv_file: "goea_results_down.csv"
+    go_down_barplot_png_file: "go_barplot_down.png"
+    out_html_file: "report.html"
+    author: "Your Name"
+
+# Sample definitions
+# Add one entry for each sample to process
+samples:
+  # Example Sample 1
+  - name: "Sample1_Treatment_vs_Control"
+    overrides:
+      data_loading:
+        excel_path: "data/sample1.xlsx"  # Path to your Excel file
+        sheets: "Sheet1"                  # Sheet name to read
+        gene_col: "Gene Symbol"           # Override if different from base_config
+      report:
+        title: "GO Analysis Report: Sample 1"
+        sample_name: "Sample1_Treatment"
+  
+  # Example Sample 2
+  - name: "Sample2_Treatment_vs_Control"
+    overrides:
+      data_loading:
+        excel_path: "data/sample2.xlsx"
+        sheets: "DEG_results"
+      filtering:
+        padj_cutoff: 0.01  # Stricter threshold for this sample
+      report:
+        title: "GO Analysis Report: Sample 2"
+        sample_name: "Sample2_Treatment"
+  
+  # Example Sample 3 with different species (human)
+  - name: "Sample3_Human_Treatment_vs_Control"
+    overrides:
+      data_loading:
+        excel_path: "data/sample3_human.xlsx"
+        sheets: "Sheet1"
+      go_enrich:
+        gaf: "ref/goa_human.gaf"  # Use human annotation
+        gaf_file: "ref/goa_human.gaf"
+        taxon: 9606               # Human taxonomy ID
+      report:
+        title: "GO Analysis Report: Sample 3 (Human)"
+        sample_name: "Sample3_Human"
+
+# Notes:
+# - All paths are relative to the project root directory
+# - Sample names should be unique and filesystem-safe (no spaces or special characters)
+# - Overrides are merged with base_config, so you only need to specify what changes
+# - For human samples, use taxon: 9606 and gaf: "ref/goa_human.gaf"
+# - For mouse samples, use taxon: 10090 and gaf: "ref/goa_mouse.gaf"
