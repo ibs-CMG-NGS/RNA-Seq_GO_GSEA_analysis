@@ -10,7 +10,7 @@ OUTPUT_DIR = config.get("ROOT_DIR", "output/go_analysis")
 ROOT_DIR = config.get("ROOT_DIR", "output/go_analysis")
 
 # path to conda environment yaml
-CONDA_ENV = "rna-seq-go-gsea-analysis"
+CONDA_ENV = "environment.yml"
 
 # Define all output files from the pipeline
 rule all:
