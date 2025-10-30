@@ -12,7 +12,7 @@ SAMPLE_NAMES = [s["name"] for s in SAMPLES]
 OUTPUT_ROOT = config.get("output_root", "results/batch_go_analysis")
 
 # path to conda environment yaml
-CONDA_ENV = "../environment.yml"
+CONDA_ENV = "rna-seq-go-gsea-analysis"
 
 # Rule to process all samples
 rule all:
@@ -21,7 +21,6 @@ rule all:
 
 # Rule 1: Data loading for each sample
 rule data_loading:
-    conda: CONDA_ENV
     output:
         csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     params:
@@ -64,11 +63,18 @@ rule data_loading:
         Path(log[0]).parent.mkdir(parents=True, exist_ok=True)
         
         # Execute data loading
-        shell(f"python src/analysis/data_loading.py --config {temp_config_path} --config-section data_loading 2>&1 | tee {log[0]}")
+        shell:
+            """
+            source $(conda info --base)/etc/profile.d/conda.sh
+            conda activate {CONDA_ENV}
+            python src/analysis/data_loading.py \
+                --config {temp_config_path} \
+                --config-section data_loading \
+                2>&1 | tee {log[0]}")
+            """
 
 # Rule 2: Filtering for each sample
 rule filtering:
-    conda: CONDA_ENV
     input:
         csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     output:
@@ -81,6 +87,8 @@ rule filtering:
         f"{OUTPUT_ROOT}/{{sample}}/logs/filtering.log"
     shell:
         """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
         python src/analysis/filtering.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section filtering \
@@ -89,7 +97,6 @@ rule filtering:
 
 # Rule 3: Volcano plot for each sample
 rule volcano:
-    conda: CONDA_ENV
     input:
         csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     output:
@@ -100,6 +107,8 @@ rule volcano:
         f"{OUTPUT_ROOT}/{{sample}}/logs/volcano.log"
     shell:
         """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
         python src/analysis/volcano.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section volcano \
@@ -108,7 +117,6 @@ rule volcano:
 
 # Rule 4: GO enrichment for each sample
 rule go_enrich:
-    conda: CONDA_ENV
     input:
         filtered = f"{OUTPUT_ROOT}/{{sample}}/filtered.csv",
         up_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_up_genes.txt",
@@ -124,6 +132,8 @@ rule go_enrich:
         f"{OUTPUT_ROOT}/{{sample}}/logs/go_enrich.log"
     shell:
         """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
         python src/analysis/go_enrich.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section go_enrich \
@@ -132,7 +142,6 @@ rule go_enrich:
 
 # Rule 5: GO barplot for each sample
 rule go_barplot:
-    conda: CONDA_ENV
     input:
         go_all = f"{OUTPUT_ROOT}/{{sample}}/goea_results_all.csv",
         go_up = f"{OUTPUT_ROOT}/{{sample}}/goea_results_up.csv",
@@ -147,6 +156,8 @@ rule go_barplot:
         f"{OUTPUT_ROOT}/{{sample}}/logs/go_barplot.log"
     shell:
         """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
         python src/analysis/go_barplot.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section go_barplot \
@@ -155,7 +166,6 @@ rule go_barplot:
 
 # Rule 6: Generate report for each sample
 rule report_generation:
-    conda: CONDA_ENV
     input:
         standardized = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv",
         filtered = f"{OUTPUT_ROOT}/{{sample}}/filtered.csv",
@@ -174,6 +184,8 @@ rule report_generation:
         f"{OUTPUT_ROOT}/{{sample}}/logs/report_generation.log"
     shell:
         """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
         python src/analysis/report_generation.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section report \
