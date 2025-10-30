@@ -1,4 +1,4 @@
-name: rnaseq-analysis
+name: rna-seq-go-gsea-analysis
 channels:
   - conda-forge
   - bioconda
