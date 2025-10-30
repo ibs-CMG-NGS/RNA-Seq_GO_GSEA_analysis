@@ -138,8 +138,8 @@ rule go_barplot:
         """
 
 # Rule 6: Generate HTML report
+rule report_generation:
     conda: CONDA_ENV
-    rule report_generation:
     input:
         standardized = f"{OUTPUT_DIR}/standardized.csv",
         filtered = f"{OUTPUT_DIR}/filtered.csv",
