@@ -9,6 +9,9 @@ configfile: "workflow/config/gsea_config.yaml"
 OUTPUT_DIR = config.get("ROOT_DIR", "output/gsea_analysis")
 ROOT_DIR = config.get("ROOT_DIR", "output/gsea_analysis")
 
+# path to conda environment yaml
+CONDA_ENV = "workflow/envs/rna-seq-go-gsea-analysis.yaml"
+
 # Define all output files from the pipeline
 rule all:
     input:
