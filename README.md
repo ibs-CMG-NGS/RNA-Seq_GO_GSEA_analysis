@@ -9,10 +9,11 @@ A comprehensive, modular Python pipeline for RNA-Seq post-analysis, specializing
 
 - **🧩 Highly Modular:** Independent, reusable analysis modules that can be mixed and matched
 - **⚙️ Configuration-Driven:** YAML-based configuration for reproducible analyses
-- **🚀 Dual Execution Modes:** Interactive notebooks for exploration + CLI tools for automation
+- **🚀 Multiple Execution Modes:** Interactive notebooks, CLI tools, and Snakemake workflows
+- **🐍 Snakemake Integration:** Automated workflow management with parallelization and error recovery
 - **📊 Publication-Ready Outputs:** High-quality visualizations and comprehensive HTML reports
-- **🔄 Batch Processing:** Process multiple samples efficiently with a single command
-- **🐧 Linux-Ready:** Full CLI support for server and HPC environments
+- **🔄 Efficient Batch Processing:** Process multiple samples in parallel using Snakemake
+- **🐧 HPC-Ready:** Full support for SLURM, PBS, and other cluster schedulers
 
 ## 📋 Table of Contents
 
@@ -21,6 +22,7 @@ A comprehensive, modular Python pipeline for RNA-Seq post-analysis, specializing
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
 - [Usage Guide](#-usage-guide)
+- [Snakemake Workflow Automation](#-snakemake-workflow-automation)
 - [Configuration](#-configuration)
 - [CLI Reference](#-cli-reference)
 - [Project Structure](#-project-structure)
@@ -45,9 +47,11 @@ A comprehensive, modular Python pipeline for RNA-Seq post-analysis, specializing
 - **🔧 Modular Design:** Each analysis step is an independent, reusable module
 - **📝 YAML Configuration:** All parameters controlled via human-readable config files
 - **📓 Interactive Notebooks:** Step-by-step guided analysis for exploration
-- **⚡ Batch Processing:** Process dozens of samples automatically via manifest files
+- **🐍 Snakemake Workflows:** Automated pipeline execution with dependency tracking
+- **⚡ Parallel Processing:** Leverage multiple cores for faster batch analysis
 - **🖥️ CLI Tools:** Full command-line interface for all analysis steps
 - **🔄 Reproducibility:** Configuration-based workflows ensure reproducible results
+- **💾 Smart Caching:** Only re-run steps when inputs change (Snakemake)
 
 ## 🏗️ Architecture
 
@@ -389,6 +393,317 @@ Execute:
 ```bash
 python src/analysis/batch_runner.py --manifest configs/my_batch_manifest.yaml
 ```
+
+## 🐍 Snakemake Workflow Automation
+
+Snakemake is a powerful workflow management system that brings reproducibility, scalability, and efficiency to your RNA-Seq analysis. This section provides comprehensive guidance on using Snakemake workflows.
+
+### Why Snakemake?
+
+Snakemake offers significant advantages over traditional sequential batch processing:
+
+#### Key Benefits
+
+1. **Automatic Parallelization**
+   - Executes independent samples and steps in parallel
+   - Maximizes resource utilization on multi-core systems
+   - Reduces total analysis time by 3-5x for batch processing
+
+2. **Smart Dependency Management**
+   - Tracks input/output relationships automatically
+   - Only re-runs steps when inputs change
+   - Avoids redundant computations
+
+3. **Reproducibility**
+   - Built-in provenance tracking
+   - Version-controlled workflow definitions
+   - Documented execution history
+
+4. **Error Recovery**
+   - Resume from failure points without restarting
+   - No need to re-run successful steps
+   - Save time and computational resources
+
+5. **Scalability**
+   - Seamlessly scale from laptop to HPC clusters
+   - Works with SLURM, PBS, LSF, and other schedulers
+   - Cloud execution support (AWS, Google Cloud)
+
+6. **Visualization**
+   - Generate workflow DAGs
+   - Understand pipeline structure at a glance
+   - Debug complex workflows easily
+
+### Workflow Types
+
+We provide three Snakemake workflows:
+
+1. **`Snakefile_GO`** - Single-sample GO enrichment analysis
+2. **`Snakefile_GSEA`** - Single-sample GSEA analysis
+3. **`Snakefile_batch_GO`** - Multi-sample batch GO analysis
+
+### Quick Start with Snakemake
+
+#### 1. Setup Environment
+
+```bash
+# Create and activate Snakemake environment
+conda env create -f snakemake_environment.yml
+conda activate snakemake_env
+```
+
+#### 2. Configure Your Analysis
+
+Edit the workflow configuration file for your analysis type:
+
+```bash
+# For single GO analysis
+nano workflow/config/go_config.yaml
+
+# For batch GO analysis
+nano workflow/config/batch_go_config.yaml
+```
+
+#### 3. Dry Run (Preview)
+
+Always preview what will be executed:
+
+```bash
+# Single sample GO analysis
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --dry-run --printshellcmds
+
+# Batch GO analysis
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --dry-run --printshellcmds
+```
+
+#### 4. Execute Workflow
+
+```bash
+# Single sample (1 core)
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --cores 1
+
+# Batch processing (4 cores for parallel execution)
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cores 4
+```
+
+### Advanced Snakemake Usage
+
+#### Workflow Visualization
+
+Generate visual representations of your workflow:
+
+```bash
+# DAG (Directed Acyclic Graph) showing all jobs
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --dag | dot -Tpng > workflow_dag.png
+
+# Rule graph showing workflow structure
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --rulegraph | dot -Tpng > workflow_rules.png
+
+# File graph showing input/output dependencies
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --filegraph | dot -Tpng > workflow_files.png
+```
+
+#### Executing Specific Rules
+
+Run only certain steps of the pipeline:
+
+```bash
+# Run only data loading and filtering
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --until filtering --cores 1
+
+# Run only the GO enrichment step
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --forcerun go_enrich --cores 1
+```
+
+#### Force Re-execution
+
+Force re-running of specific steps or entire workflow:
+
+```bash
+# Re-run entire workflow
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --forceall --cores 1
+
+# Re-run from a specific rule onwards
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --forcerun go_enrich --cores 1
+```
+
+#### Cluster/HPC Execution
+
+##### SLURM Clusters
+
+```bash
+# Basic SLURM submission
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cluster "sbatch --time=02:00:00 --mem=16G --cpus-per-task=1" \
+    --jobs 10
+
+# With custom resource allocation per rule
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cluster "sbatch --time={resources.time} --mem={resources.mem_mb}M" \
+    --default-resources time=60 mem_mb=8000 \
+    --jobs 20
+```
+
+##### PBS/Torque Clusters
+
+```bash
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cluster "qsub -l walltime=02:00:00 -l mem=16gb" \
+    --jobs 10
+```
+
+#### Monitoring and Logging
+
+```bash
+# Detailed progress logging
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cores 4 \
+    --printshellcmds \
+    --verbose
+
+# Save logs to file
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cores 4 \
+    2>&1 | tee snakemake_run.log
+```
+
+### Batch Configuration Example
+
+Here's a complete example of `workflow/config/batch_go_config.yaml`:
+
+```yaml
+# Output directory for all samples
+output_root: "results/batch_go_snakemake"
+
+# Base configuration applied to all samples
+base_config:
+  filtering:
+    mode: thresholds
+    padj_cutoff: 0.05
+    log2fc_cutoff: 0
+    direction: both
+  
+  go_enrich:
+    obo: "ref/go-basic.obo"
+    gaf: "ref/goa_mouse.gaf"
+    taxon: 10090
+    alpha: 0.05
+
+# Sample definitions
+samples:
+  - name: "Control_vs_Treatment1"
+    overrides:
+      data_loading:
+        excel_path: "data/exp1.xlsx"
+        sheets: "Sheet1"
+        gene_col: "Gene Symbol"
+        log2fc_col: "log2FC"
+        padj_col: "padj"
+      report:
+        title: "GO Analysis: Control vs Treatment1"
+        sample_name: "Treatment1"
+  
+  - name: "Control_vs_Treatment2"
+    overrides:
+      data_loading:
+        excel_path: "data/exp2.xlsx"
+        sheets: "Sheet1"
+      filtering:
+        padj_cutoff: 0.01  # Stricter threshold for this sample
+      report:
+        title: "GO Analysis: Control vs Treatment2"
+        sample_name: "Treatment2"
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+**Issue**: "MissingInputException: Missing input files"
+```bash
+# Solution: Check if input files exist and paths are correct
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --dry-run --verbose
+```
+
+**Issue**: "AmbiguousRuleException"
+```bash
+# Solution: Be more specific with target files or rules
+snakemake --snakefile workflow/Snakefile_GO \
+    --configfile workflow/config/go_config.yaml \
+    --until rule_name --cores 1
+```
+
+**Issue**: Jobs fail but Snakemake doesn't show errors
+```bash
+# Solution: Check log files in output directory
+cat results/batch_go_snakemake/sample1/logs/*.log
+```
+
+### Performance Optimization
+
+For optimal performance when processing multiple samples:
+
+```bash
+# Use appropriate core count (typically: number of samples or CPU cores)
+# Example: 8 samples on a 16-core machine
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cores 8
+
+# For cluster execution, match jobs to available nodes
+# Example: 50 samples on cluster with 10 available nodes
+snakemake --snakefile workflow/Snakefile_batch_GO \
+    --configfile workflow/config/batch_go_config.yaml \
+    --cluster "sbatch --time=02:00:00 --mem=16G" \
+    --jobs 10
+```
+
+### Best Practices
+
+1. **Always dry-run first**: Use `--dry-run` to preview execution
+2. **Use version control**: Commit workflow and config files to git
+3. **Document parameters**: Add comments to configuration files
+4. **Check logs**: Review execution logs for errors and warnings
+5. **Visualize workflows**: Generate DAGs to understand pipeline structure
+6. **Start small**: Test with 1-2 samples before full batch processing
+7. **Monitor resources**: Track memory and CPU usage during execution
+8. **Use appropriate cores**: Match `--cores` to your system capabilities
+
+### Additional Resources
+
+- **Workflow README**: See `workflow/README.md` for detailed workflow documentation
+- **Snakemake Documentation**: https://snakemake.readthedocs.io/
+- **Tutorial**: https://snakemake.readthedocs.io/en/stable/tutorial/tutorial.html
+- **Best Practices**: https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html
 
 ## ⚙️ Configuration
 
