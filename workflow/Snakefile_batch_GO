@@ -21,6 +21,7 @@ rule all:
 
 # Rule 1: Data loading for each sample
 rule data_loading:
+    conda: CONDA_ENV
     output:
         csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     params:
@@ -67,6 +68,7 @@ rule data_loading:
 
 # Rule 2: Filtering for each sample
 rule filtering:
+    conda: CONDA_ENV
     input:
         csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     output:
@@ -87,6 +89,7 @@ rule filtering:
 
 # Rule 3: Volcano plot for each sample
 rule volcano:
+    conda: CONDA_ENV
     input:
         csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     output:
@@ -105,6 +108,7 @@ rule volcano:
 
 # Rule 4: GO enrichment for each sample
 rule go_enrich:
+    conda: CONDA_ENV
     input:
         filtered = f"{OUTPUT_ROOT}/{{sample}}/filtered.csv",
         up_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_up_genes.txt",
@@ -128,6 +132,7 @@ rule go_enrich:
 
 # Rule 5: GO barplot for each sample
 rule go_barplot:
+    conda: CONDA_ENV
     input:
         go_all = f"{OUTPUT_ROOT}/{{sample}}/goea_results_all.csv",
         go_up = f"{OUTPUT_ROOT}/{{sample}}/goea_results_up.csv",
@@ -150,6 +155,7 @@ rule go_barplot:
 
 # Rule 6: Generate report for each sample
 rule report_generation:
+    conda: CONDA_ENV
     input:
         standardized = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv",
         filtered = f"{OUTPUT_ROOT}/{{sample}}/filtered.csv",
