@@ -30,6 +30,7 @@ rule all:
 
 # Rule 1: Data loading and standardization
 rule data_loading:
+    conda: CONDA_ENV
     output:
         csv = f"{OUTPUT_DIR}/standardized.csv"
     params:
@@ -47,6 +48,7 @@ rule data_loading:
 
 # Rule 2: Filtering DEGs
 rule filtering:
+    conda: CONDA_ENV
     input:
         csv = f"{OUTPUT_DIR}/standardized.csv"
     output:
@@ -68,6 +70,7 @@ rule filtering:
 
 # Rule 3: Generate volcano plot
 rule volcano:
+    conda: CONDA_ENV
     input:
         csv = f"{OUTPUT_DIR}/standardized.csv"
     output:
@@ -87,6 +90,7 @@ rule volcano:
 
 # Rule 4: GO enrichment analysis
 rule go_enrich:
+    conda: CONDA_ENV
     input:
         filtered = f"{OUTPUT_DIR}/filtered.csv",
         up_genes = f"{OUTPUT_DIR}/filtered_up_genes.txt",
@@ -111,6 +115,7 @@ rule go_enrich:
 
 # Rule 5: GO barplot visualization
 rule go_barplot:
+    conda: CONDA_ENV
     input:
         go_all = f"{OUTPUT_DIR}/goea_results_all.csv",
         go_up = f"{OUTPUT_DIR}/goea_results_up.csv",
@@ -133,7 +138,8 @@ rule go_barplot:
         """
 
 # Rule 6: Generate HTML report
-rule report_generation:
+    conda: CONDA_ENV
+    rule report_generation:
     input:
         standardized = f"{OUTPUT_DIR}/standardized.csv",
         filtered = f"{OUTPUT_DIR}/filtered.csv",
