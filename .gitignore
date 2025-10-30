@@ -18,8 +18,11 @@ venv/
 # 'results/' is also used by batch_runner.py
 data/processed/
 output/
-results/
+# Keep the 'output' directory structure
+!output/.gitkeep
 ref/
+# Keep the 'ref' directory structure
+!ref/.gitkeep
 
 # Logs
 *.log
