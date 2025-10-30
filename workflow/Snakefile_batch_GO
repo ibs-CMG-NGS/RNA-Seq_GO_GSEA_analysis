@@ -12,7 +12,7 @@ SAMPLE_NAMES = [s["name"] for s in SAMPLES]
 OUTPUT_ROOT = config.get("output_root", "results/batch_go_analysis")
 
 # path to conda environment yaml
-CONDA_ENV = "workflow/envs/rna-seq-go-gsea-analysis.yaml"
+CONDA_ENV = "environment.yml"
 
 # Rule to process all samples
 rule all:
