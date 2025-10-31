@@ -76,7 +76,7 @@ rule data_loading:
 # Rule 2: Filtering for each sample
 rule filtering:
     input:
-        csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
+        csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv",
     output:
         filtered = f"{OUTPUT_ROOT}/{{sample}}/filtered.csv",
         up_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_up_genes.txt",
@@ -84,7 +84,7 @@ rule filtering:
     params:
         sample = "{sample}"
     log:
-        f"{OUTPUT_ROOT}/{{sample}}/logs/filtering.log"
+        f"{OUTPUT_ROOT}/{{sample}}/logs/filtering.log",
     shell:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
@@ -98,13 +98,13 @@ rule filtering:
 # Rule 3: Volcano plot for each sample
 rule volcano:
     input:
-        csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
+        csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv",
     output:
-        plot = f"{OUTPUT_ROOT}/{{sample}}/volcano.png"
+        plot = f"{OUTPUT_ROOT}/{{sample}}/volcano.png",
     params:
-        sample = "{sample}"
+        sample = "{sample}",
     log:
-        f"{OUTPUT_ROOT}/{{sample}}/logs/volcano.log"
+        f"{OUTPUT_ROOT}/{{sample}}/logs/volcano.log",
     shell:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
@@ -127,9 +127,9 @@ rule go_enrich:
         go_up = f"{OUTPUT_ROOT}/{{sample}}/goea_results_up.csv",
         go_down = f"{OUTPUT_ROOT}/{{sample}}/goea_results_down.csv",
     params:
-        sample = "{sample}"
+        sample = "{sample}",
     log:
-        f"{OUTPUT_ROOT}/{{sample}}/logs/go_enrich.log"
+        f"{OUTPUT_ROOT}/{{sample}}/logs/go_enrich.log",
     shell:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
@@ -151,9 +151,9 @@ rule go_barplot:
         plot_up = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_up.png",
         plot_down = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_down.png",
     params:
-        sample = "{sample}"
+        sample = "{sample}",
     log:
-        f"{OUTPUT_ROOT}/{{sample}}/logs/go_barplot.log"
+        f"{OUTPUT_ROOT}/{{sample}}/logs/go_barplot.log",
     shell:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
@@ -177,11 +177,11 @@ rule report_generation:
         plot_up = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_up.png",
         plot_down = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_down.png",
     output:
-        report = f"{OUTPUT_ROOT}/{{sample}}/report.html"
+        report = f"{OUTPUT_ROOT}/{{sample}}/report.html",
     params:
-        sample = "{sample}"
+        sample = "{sample}",
     log:
-        f"{OUTPUT_ROOT}/{{sample}}/logs/report_generation.log"
+        f"{OUTPUT_ROOT}/{{sample}}/logs/report_generation.log",
     shell:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
