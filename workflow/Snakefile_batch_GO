@@ -82,7 +82,7 @@ rule filtering:
         up_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_up_genes.txt",
         down_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_down_genes.txt",
     params:
-        sample = "{sample}"
+        sample = "{sample}",
     log:
         f"{OUTPUT_ROOT}/{{sample}}/logs/filtering.log",
     shell:
