@@ -22,12 +22,12 @@ rule all:
 # Rule 1: Data loading for each sample
 rule data_loading:
     output:
-        csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv",
+        csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     params:
         sample = "{sample}",
-        config_template = "workflow/config/batch_go_config.yaml",
+        config_template = "workflow/config/batch_go_config.yaml"
     log:
-        f"{OUTPUT_ROOT}/{{sample}}/logs/data_loading.log",
+        f"{OUTPUT_ROOT}/{{sample}}/logs/data_loading.log"
     run:
         import yaml
         from pathlib import Path
@@ -60,18 +60,17 @@ rule data_loading:
             yaml.dump(temp_config, f, default_flow_style=False)
         
         # Create logs directory
-        Path(log).parent.mkdir(parents=True, exist_ok=True)
+        Path(log[0]).parent.mkdir(parents=True, exist_ok=True)
         
-        # Execute data loading
-        shell:
-            """
+        # Execute data loading (✅ fixed)
+        shell(f"""
             source $(conda info --base)/etc/profile.d/conda.sh
             conda activate {CONDA_ENV}
             python src/analysis/data_loading.py \
                 --config {temp_config_path} \
                 --config-section data_loading \
-                2>&1 | tee {log}")
-            """
+                2>&1 | tee {log}
+        """)
 
 # Rule 2: Filtering for each sample
 rule filtering:
