@@ -70,7 +70,7 @@ rule data_loading:
             python src/analysis/data_loading.py \
                 --config {temp_config_path} \
                 --config-section data_loading \
-                2>&1 | tee {log[0]}")
+                2>&1 | tee {log}")
             """
 
 # Rule 2: Filtering for each sample
