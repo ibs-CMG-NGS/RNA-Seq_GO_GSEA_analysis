@@ -44,7 +44,6 @@ rule gsea_analysis:
         csv = f"{OUTPUT_DIR}/standardized.csv"
     output:
         report = f"{OUTPUT_DIR}/GSEA_Report.xlsx",
-        results_dir = directory(f"{OUTPUT_DIR}/gsea_results")
     params:
         config = "workflow/config/gsea_config.yaml",
         section = "gsea"
