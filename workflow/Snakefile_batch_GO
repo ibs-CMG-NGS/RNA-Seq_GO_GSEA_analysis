@@ -80,7 +80,7 @@ rule filtering:
     output:
         filtered = f"{OUTPUT_ROOT}/{{sample}}/filtered.csv",
         up_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_up_genes.txt",
-        down_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_down_genes.txt"
+        down_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_down_genes.txt",
     params:
         sample = "{sample}"
     log:
@@ -121,11 +121,11 @@ rule go_enrich:
         filtered = f"{OUTPUT_ROOT}/{{sample}}/filtered.csv",
         up_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_up_genes.txt",
         down_genes = f"{OUTPUT_ROOT}/{{sample}}/filtered_down_genes.txt",
-        background = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
+        background = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv",
     output:
         go_all = f"{OUTPUT_ROOT}/{{sample}}/goea_results_all.csv",
         go_up = f"{OUTPUT_ROOT}/{{sample}}/goea_results_up.csv",
-        go_down = f"{OUTPUT_ROOT}/{{sample}}/goea_results_down.csv"
+        go_down = f"{OUTPUT_ROOT}/{{sample}}/goea_results_down.csv",
     params:
         sample = "{sample}"
     log:
@@ -145,11 +145,11 @@ rule go_barplot:
     input:
         go_all = f"{OUTPUT_ROOT}/{{sample}}/goea_results_all.csv",
         go_up = f"{OUTPUT_ROOT}/{{sample}}/goea_results_up.csv",
-        go_down = f"{OUTPUT_ROOT}/{{sample}}/goea_results_down.csv"
+        go_down = f"{OUTPUT_ROOT}/{{sample}}/goea_results_down.csv",
     output:
         plot_all = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_all.png",
         plot_up = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_up.png",
-        plot_down = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_down.png"
+        plot_down = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_down.png",
     params:
         sample = "{sample}"
     log:
@@ -175,7 +175,7 @@ rule report_generation:
         go_down = f"{OUTPUT_ROOT}/{{sample}}/goea_results_down.csv",
         plot_all = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_all.png",
         plot_up = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_up.png",
-        plot_down = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_down.png"
+        plot_down = f"{OUTPUT_ROOT}/{{sample}}/go_barplot_down.png",
     output:
         report = f"{OUTPUT_ROOT}/{{sample}}/report.html"
     params:
