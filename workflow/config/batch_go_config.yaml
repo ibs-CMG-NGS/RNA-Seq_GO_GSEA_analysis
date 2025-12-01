@@ -7,6 +7,13 @@ output_root: "results/batch_go_snakemake"
 # Base configuration that applies to all samples
 # Individual samples can override these settings
 base_config:
+  data_loading:
+    excel_path: "data/processed/Shank2/Shank2_RNA-seq_result.xlsx"
+    sheets: "3W-HT" # or "all"
+    gene_col: "Mouse symbol"
+    log2fc_col: "log2FC"
+    padj_col: "adjusted p-value"
+    csv_file: "standardized.csv"
   filtering:
     mode: thresholds
     padj_cutoff: 0.05
