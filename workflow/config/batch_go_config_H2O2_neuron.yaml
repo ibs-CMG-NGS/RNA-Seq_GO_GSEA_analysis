@@ -1,0 +1,90 @@
+# This file orchestrates a batch run of the GO pipeline for multiple samples using Snakemake.
+
+# A root directory to store all outputs from this batch run.
+# A subfolder will be created for each sample.
+output_root: "results/batch_go_H2O2_GABA"
+
+# Base configuration that applies to all samples
+# Individual samples can override these settings
+base_config:
+  data_loading:
+    excel_path: "data/from_de_pipeline/H2O2_vs_Control_DE_results.xlsx"
+    sheets: "DE_Results" # or "all"
+    gene_col: "symbol"
+    log2fc_col: "log2FoldChange"
+    padj_col: "padj"
+    csv_file: "standardized.csv"
+  filtering:
+    mode: thresholds
+    padj_cutoff: 0.05
+    log2fc_cutoff: 0
+    direction: both
+    out_csv_file: "filtered.csv"
+    out_up_genes_file: "filtered_up_genes.txt"
+    out_down_genes_file: "filtered_down_genes.txt"
+    in_csv_file: "standardized.csv"
+  
+  volcano:
+    in_csv_file: "standardized.csv"
+    out_png_file: "volcano.png"
+    padj_cutoff: 0.05
+    log2fc_cutoff: 0
+    max_labels: 30
+  
+  go_enrich:
+    filtered_csv: "filtered.csv"
+    up_genes_file: "filtered_up_genes.txt"
+    down_genes_file: "filtered_down_genes.txt"
+    background_csv: "standardized.csv"
+    obo: "ref/go-basic.obo"
+    gaf: "ref/goa_mouse.gaf"
+    gaf_file: "ref/goa_mouse.gaf"
+    taxon: 10090
+    alpha: 0.05
+    goea_csv_file: "goea_results_all.csv"
+    goea_up_csv_file: "goea_results_up.csv"
+    goea_down_csv_file: "goea_results_down.csv"
+  
+  go_barplot:
+    out_png_file: "go_barplot_all.png"
+    out_up_png_file: "go_barplot_up.png"
+    out_down_png_file: "go_barplot_down.png"
+    top_n: 10
+    namespaces: ["BP", "MF", "CC"]
+  
+  report:
+    standardized_csv_file: "standardized.csv"
+    filtered_csv_file: "filtered.csv"
+    volcano_png_file: "volcano.png"
+    goea_csv_file: "goea_results_all.csv"
+    go_barplot_png_file: "go_barplot_all.png"
+    goea_up_csv_file: "goea_results_up.csv"
+    go_up_barplot_png_file: "go_barplot_up.png"
+    goea_down_csv_file: "goea_results_down.csv"
+    go_down_barplot_png_file: "go_barplot_down.png"
+    out_html_file: "report.html"
+    author: "YGKim"
+
+# List of samples to process. Each sample will run the full pipeline.
+samples:
+  - name: "H2O2-treated"
+    # Overrides for this specific sample.
+    # These will be merged with the base_config.
+    overrides:      
+      data_loading: 
+        excel_path: "data/from_de_pipeline/H2O2_vs_Control_DE_results.xlsx" # relative to project root
+        sheets: "DE_Results"
+      report:
+        title: "GO Analysis Report for H2O2-treated"
+        sample_name: "H2O2-treated"
+
+  - name: "GABA-treated"
+    # Overrides for this specific sample.
+    # These will be merged with the base_config.
+    overrides:      
+      data_loading: 
+        excel_path: "data/from_de_pipeline/GABA_vs_Control_DE_results.xlsx" # relative to project root
+        sheets: "DE_Results"
+      report:
+        title: "GO Analysis Report for GABA-treated"
+        sample_name: "GABA-treated"

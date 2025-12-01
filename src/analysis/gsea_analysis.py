@@ -167,9 +167,12 @@ def _main(argv=None):
     elif mode == "classic":
         expr_matrix_csv = resolve_path(cli_path=None, cfg=cfg_all, config_key="expression_matrix_csv", config_section=args.config_section)[0]
         class_labels_file = resolve_path(cli_path=None, cfg=cfg_all, config_key="class_labels_file", config_section=args.config_section)[0]
-        expression_df = pd.read_csv(expr_matrix_csv, sep="\t")
+        # Read with NAME column as string to avoid gseapy isupper() error
+        expression_df = pd.read_csv(expr_matrix_csv, sep="\t", dtype={"NAME": str, "DESCRIPTION": str})
         if 'NAME' in expression_df.columns:
             expression_df = expression_df.set_index('NAME').drop(columns=['DESCRIPTION'], errors='ignore')
+        # Ensure index is string type before numeric conversion
+        expression_df.index = expression_df.index.astype(str)
         expression_df = expression_df.apply(pd.to_numeric, errors='coerce').fillna(0)
         classic_data = (expression_df, class_labels_file)
 

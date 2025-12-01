@@ -150,8 +150,9 @@ def create_gsea_expression_matrix(df: pd.DataFrame, gene_col: str, sample_cols: 
     if not all(col in df.columns for col in sample_cols):
         logging.error(f"Cannot create GSEA matrix. Not all sample columns defined in YAML were found in the data. Missing: {set(sample_cols) - set(df.columns)}")
         return
-        
-    gsea_df = pd.DataFrame({"NAME": df[gene_col], "DESCRIPTION": df[gene_col]})
+    
+    # Ensure gene names are strings to avoid gseapy isupper() error
+    gsea_df = pd.DataFrame({"NAME": df[gene_col].astype(str), "DESCRIPTION": df[gene_col].astype(str)})
     gsea_df = pd.concat([gsea_df, df[sample_cols]], axis=1)
     
     ensure_dir(Path(output_path).parent)
@@ -164,9 +165,13 @@ def create_gsea_class_labels(class_map: dict, output_path: str):
     num_samples = sum(len(samples) for samples in class_map.values())
     num_classes = len(classes)
     
+    # Use categorical format (0-indexed) for gseapy compatibility
     line1 = f"{num_samples} {num_classes} 1"
     line2 = f"# {' '.join(classes)}"
-    class_labels = [cls for cls in classes for _ in class_map[cls]]
+    # Create numeric labels (0, 1, etc.) based on class order
+    class_labels = []
+    for cls in classes:
+        class_labels.extend([str(classes.index(cls))] * len(class_map[cls]))
 
     ensure_dir(Path(output_path).parent)
     with open(output_path, "w") as f:

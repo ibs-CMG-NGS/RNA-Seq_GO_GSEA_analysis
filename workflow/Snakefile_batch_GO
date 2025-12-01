@@ -4,7 +4,8 @@ Process multiple samples efficiently
 """
 
 # Configuration
-configfile: "workflow/config/batch_go_config.yaml"
+# configfile: "workflow/config/batch_go_config_H2O2_neuron.yaml"
+# Note: Use --configfile option when running snakemake instead
 
 # Get sample list from config
 SAMPLES = config.get("samples", [])
@@ -24,19 +25,18 @@ rule data_loading:
     output:
         csv = f"{OUTPUT_ROOT}/{{sample}}/standardized.csv"
     params:
-        sample = "{sample}",
-        config_template = "workflow/config/batch_go_config.yaml"
+        sample = "{sample}"
     log:
         f"{OUTPUT_ROOT}/{{sample}}/logs/data_loading.log"
     run:
         import yaml
         from pathlib import Path
         
-        # Load config and find sample-specific settings
-        with open(params.config_template) as f:
-            config = yaml.safe_load(f)
+        # Use the config already loaded by configfile directive
+        sample_config = next((s for s in config["samples"] if s["name"] == params.sample), None)
         
-        sample_config = next(s for s in config["samples"] if s["name"] == params.sample)
+        if sample_config is None:
+            raise ValueError(f"Sample '{params.sample}' not found in config")
         
         # Create temporary config for this sample
         temp_config = config.get("base_config", {}).copy()
