@@ -26,6 +26,10 @@ if not config:
 OUTPUT_DIR = config.get("ROOT_DIR", "output/gsea_analysis")
 ROOT_DIR = config.get("ROOT_DIR", "output/gsea_analysis")
 
+# Get GSEA output file name from config, with fallback
+GSEA_SECTION = config.get("gsea", {})
+GSEA_OUTPUT_FILE = GSEA_SECTION.get("output_excel_file", "GSEA_Report.xlsx")
+
 # path to conda environment yaml
 CONDA_ENV = "rna-seq-go-gsea-analysis"
 
@@ -33,7 +37,7 @@ CONDA_ENV = "rna-seq-go-gsea-analysis"
 rule all:
     input:
         standardized = f"{OUTPUT_DIR}/standardized.csv",
-        gsea_report = f"{OUTPUT_DIR}/GSEA_Report.xlsx",
+        gsea_report = f"{OUTPUT_DIR}/{GSEA_OUTPUT_FILE}",
         plots_dir = directory(f"{OUTPUT_DIR}/plots")
 
 # Rule 1: Data loading
@@ -62,7 +66,7 @@ rule gsea_analysis:
     input:
         csv = f"{OUTPUT_DIR}/standardized.csv"
     output:
-        report = f"{OUTPUT_DIR}/GSEA_Report.xlsx",
+        report = f"{OUTPUT_DIR}/{GSEA_OUTPUT_FILE}",
     params:
         config = CONFIG_FILE,
         section = "gsea"
@@ -81,7 +85,7 @@ rule gsea_analysis:
 # Rule 3: GSEA plotting
 rule gsea_plot:
     input:
-        report = f"{OUTPUT_DIR}/GSEA_Report.xlsx"
+        report = f"{OUTPUT_DIR}/{GSEA_OUTPUT_FILE}"
     output:
         plots_dir = directory(f"{OUTPUT_DIR}/plots")
     params:
