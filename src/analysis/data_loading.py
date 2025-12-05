@@ -47,23 +47,10 @@ from utils.logging_utils_environ import setup_logging
 # 이미 존재하는 로그 파일을 사용하거나, 없으면 새로 만듭니다.
 logging, _ = setup_logging()
 
-# --- 프로젝트 루트 찾기 ---
-def find_project_root() -> Path:
-    """
-    Find project root directory by looking for marker files.
-    Searches upward from current file location.
-    """
-    current = Path(__file__).resolve()
-    for parent in [current.parent] + list(current.parents):
-        # Look for project markers
-        if (parent / 'setup.py').exists() or \
-           (parent / 'README.md').exists() or \
-           (parent / '.git').exists():
-            return parent
-    # Fallback to current working directory
-    return Path.cwd()
-
-PROJECT_ROOT = find_project_root()
+# --- 프로젝트 루트 설정 ---
+# 설정 파일의 상대 경로는 현재 작업 디렉토리(cwd) 기준으로 해석됩니다.
+# 사용자가 프로젝트 루트에서 스크립트를 실행할 것으로 가정합니다.
+PROJECT_ROOT = Path.cwd()
 
 def _standardize_columns(df: pd.DataFrame, column_map: Dict[str, str]) -> pd.DataFrame:
     """
