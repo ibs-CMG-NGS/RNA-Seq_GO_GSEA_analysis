@@ -1,0 +1,66 @@
+# ============================================================
+# Gene Filter Analysis Configuration
+# ============================================================
+# This config is for analyzing specific genes across multiple datasets
+# (NOT part of the main Snakemake GO pipeline)
+# ============================================================
+
+ROOT_DIR: "data/processed/H2O2"
+
+# ============================================================
+# Gene Filter Analysis (Dot Plot)
+# ============================================================
+gene_filter:
+  # 비교할 표준화된 CSV 파일 목록
+  in_csv_files:
+    - "standardized_1d.csv"
+    - "standardized_3d.csv"
+  
+  # 각 파일에 대한 별칭 (그래프 축 이름으로 사용)
+  file_aliases: ["Acute_1D", "Acute_3D"]
+
+  # 분석 결과가 저장될 출력 폴더 경로
+  output_dir: "output/gene_filter_analysis" # ROOT_DIR 기준 상대 경로
+
+  # 분석 대상 유전자 목록 파일 (프로젝트 루트 기준)
+  gene_list_file: "configs/genes_of_interest.txt"
+
+  # 컬럼 이름 매핑
+  column_map:
+    gene: "gene"
+    log2fc: "log2fc"
+    padj: "padj"
+
+  # Dot plot 시각화 옵션
+  plot_options:
+    # 그림 크기 (너비, 높이)
+    figure_size: [5, 8] # 너비를 높이보다 작거나 비슷하게 설정 (예: [5, 8])
+
+    # X축 제목 (비워두면 기본값 'source_sheet' 사용)
+    xaxis_title: "Experimental Conditions"
+
+    # X축 눈금 이름 매핑 (비워두면 원본 시트 이름 사용)
+    xaxis_tick_map:
+      Acute_1D_Genename: "Acute 1D"
+      Acute_3D_Genename: "Acute 3D"
+
+    # Log2FC 색상 범위 (최소, 최대)
+    color_norm: [-2, 2]
+
+    # P-value에 따른 점 크기 매핑
+    size_map:
+      'p < 0.01': 200
+      'p < 0.05': 100
+      'p > 0.05': 20
+
+    # Dot outline options
+    dot_outline_color: "gray" # Set to null or "" for no outline
+    dot_outline_width: 0.5
+
+    # Colorbar options
+    colorbar_width: 0.05  # Relative width of the colorbar
+    colorbar_height_ratio: 0.15 # Relative height of the colorbar compared to the main plot
+    colorbar_x_offset: 0.1 # X-offset from the right edge of the main plot for legend/colorbar
+    colorbar_y_offset: 0.05 # Y-offset from the bottom of the size legend for the colorbar
+    colorbar_ticks: [-2, 0, 2] # Specific tick values for the colorbar
+    # colorbar_ticklabels: ["Low", "Mid", "High"] # Specific tick labels for the colorbar

@@ -1,0 +1,68 @@
+# ============================================================
+# Gene Filter Analysis Configuration Template
+# ============================================================
+# This config is for analyzing specific genes across multiple datasets
+# (NOT part of the main Snakemake GO pipeline)
+#
+# Usage:
+#   python src/analysis/gene_filter_analysis.py --config configs/gene_filter_<sample>.yaml
+# ============================================================
+
+ROOT_DIR: "data/processed/<SAMPLE_NAME>"
+
+# ============================================================
+# Gene Filter Analysis (Dot Plot)
+# ============================================================
+gene_filter:
+  # 비교할 표준화된 CSV 파일 목록
+  in_csv_files:
+    - "standardized_condition1.csv"
+    - "standardized_condition2.csv"
+  
+  # 각 파일에 대한 별칭 (그래프 축 이름으로 사용)
+  file_aliases: ["Condition 1", "Condition 2"]
+
+  # 분석 결과가 저장될 출력 폴더 경로
+  output_dir: "output/gene_filter_analysis" # ROOT_DIR 기준 상대 경로
+
+  # 분석 대상 유전자 목록 파일 (프로젝트 루트 기준)
+  gene_list_file: "configs/genes_of_interest.txt"
+
+  # 컬럼 이름 매핑
+  column_map:
+    gene: "gene"
+    log2fc: "log2fc"
+    padj: "padj"
+
+  # Dot plot 시각화 옵션
+  plot_options:
+    # 그림 크기 (너비, 높이)
+    figure_size: [5, 8]
+
+    # X축 제목
+    xaxis_title: "Experimental Conditions"
+
+    # X축 눈금 이름 매핑 (원본 파일명을 표시할 이름으로 변경)
+    xaxis_tick_map:
+      condition1: "Condition 1"
+      condition2: "Condition 2"
+
+    # Log2FC 색상 범위 (최소, 최대)
+    color_norm: [-2, 2]
+
+    # P-value에 따른 점 크기 매핑
+    size_map:
+      'p < 0.01': 200
+      'p < 0.05': 100
+      'p > 0.05': 20
+
+    # Dot outline options
+    dot_outline_color: "gray"
+    dot_outline_width: 0.5
+
+    # Colorbar options
+    colorbar_width: 0.05
+    colorbar_height_ratio: 0.15
+    colorbar_x_offset: 0.1
+    colorbar_y_offset: 0.05
+    colorbar_ticks: [-2, 0, 2]

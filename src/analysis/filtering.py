@@ -119,16 +119,14 @@ def _main(argv=None) -> None:
     cfg_all = get_cfg(args.config) or {}
     cfg_section = cfg_all.get(args.config_section, cfg_all)
 
-    # Resolve input CSV path
-    in_csv_paths = resolve_path(
-        cli_path=[args.in_csv] if args.in_csv else None,
-        cfg=cfg_all, # Use full config
-        config_key="in_csv_file",
-        config_section=args.config_section, # e.g., "filtering"
-    )
-    in_csv = in_csv_paths[0]
+    # --- File paths from CLI (required for Snakemake) ---
+    if not args.in_csv or not args.out_csv:
+        raise SystemExit("Error: --in-csv and --out-csv are required when running via Snakemake")
+    
+    in_csv = args.in_csv
+    out_csv = args.out_csv
 
-    # Load other filtering parameters using pick for flexibility
+    # --- Analysis parameters from config or CLI ---
     mode = pick(args.mode, cfg_section, "mode", default="thresholds")
     padj_col = pick(args.padj_col, cfg_section, "padj_col", default="padj")
     log2fc_col = pick(args.log2fc_col, cfg_section, "log2fc_col", default="log2fc")
@@ -136,59 +134,53 @@ def _main(argv=None) -> None:
     log2fc_cutoff = pick(args.log2fc_cutoff, cfg_section, "log2fc_cutoff", default=0)
     direction = pick(args.direction, cfg_section, "direction", default="both")
 
-    # Resolve optional gene list file path. Treat it as a project-root-relative input.
-    gene_list_paths = resolve_path(
-        cli_path=[args.gene_list] if args.gene_list else None,
-        cfg=cfg_all, config_key="gene_list_file", config_section=args.config_section,
-        is_input=True
-    )
-    gene_list_file = gene_list_paths[0] if gene_list_paths else None
-    # Resolve output CSV path
-    out_csv_paths = resolve_path(
-        cli_path=[args.out_csv] if args.out_csv else None,
-        cfg=cfg_all,
-        config_key="out_csv_file",
-        config_section=args.config_section,
-    )
-    out_csv = out_csv_paths[0]
+    # Optional gene list file path (for gene_list mode)
+    gene_list_file = None
+    if args.gene_list:
+        gene_list_file = args.gene_list
+    elif mode == "gene_list":
+        # Try to get from config (project-root-relative)
+        gene_list_paths = resolve_path(
+            cli_path=None,
+            cfg=cfg_all, 
+            config_key="gene_list_file", 
+            config_section=args.config_section,
+            is_input=True
+        )
+        gene_list_file = gene_list_paths[0] if gene_list_paths else None
 
-    if not in_csv or not out_csv:
-        raise SystemExit("Provide --config or both --in-csv and --out-csv")
-
+    # --- Perform filtering ---
     df = pd.read_csv(in_csv)
+    
     if mode == "gene_list":
         if not gene_list_file:
-            raise SystemExit("gene_list mode requires --gene-list or config.gene_list")
+            raise SystemExit("gene_list mode requires --gene-list or config.gene_list_file")
         genes = load_genes(gene_list_file)
         out = filter_by_gene_list(df, genes)
     else:
         out = filter_by_thresholds(df, padj_col, log2fc_col, padj_cutoff, log2fc_cutoff, direction)
 
-    # Save up/down gene lists if in thresholds mode and paths are provided
+    # Save filtered results
+    ensure_dir(Path(out_csv).parent)
+    out.to_csv(out_csv, index=False)
+    logging.info(f"Saved filtered CSV: {out_csv}")
+
+    # --- Save up/down gene lists if in thresholds mode ---
     if mode == "thresholds":
         up_genes = out[out[log2fc_col] > 0]["gene"].dropna().astype(str).unique()
         down_genes = out[out[log2fc_col] < 0]["gene"].dropna().astype(str).unique()
 
-        # Resolve paths for up/down gene list outputs
-        out_up_paths = resolve_path(
-            cli_path=[args.out_up_genes] if args.out_up_genes else None,
-            cfg=cfg_all, config_key="out_up_genes_file", config_section=args.config_section
-        )
-        if out_up_paths:
-            ensure_dir(Path(out_up_paths[0]).parent)
-            Path(out_up_paths[0]).write_text("\n".join(up_genes), encoding="utf-8")
+        # Save up-regulated genes if path provided
+        if args.out_up_genes:
+            ensure_dir(Path(args.out_up_genes).parent)
+            Path(args.out_up_genes).write_text("\n".join(up_genes), encoding="utf-8")
+            logging.info(f"Saved up-regulated genes: {args.out_up_genes}")
 
-        out_down_paths = resolve_path(
-            cli_path=[args.out_down_genes] if args.out_down_genes else None,
-            cfg=cfg_all, config_key="out_down_genes_file", config_section=args.config_section
-        )
-        if out_down_paths:
-            ensure_dir(Path(out_down_paths[0]).parent)
-            Path(out_down_paths[0]).write_text("\n".join(down_genes), encoding="utf-8")
-
-    ensure_dir(Path(out_csv).parent.as_posix())
-    out.to_csv(out_csv, index=False)
-    logging.info(f"Saved: {out_csv}")
+        # Save down-regulated genes if path provided
+        if args.out_down_genes:
+            ensure_dir(Path(args.out_down_genes).parent)
+            Path(args.out_down_genes).write_text("\n".join(down_genes), encoding="utf-8")
+            logging.info(f"Saved down-regulated genes: {args.out_down_genes}")
 
 
 if __name__ == "__main__":

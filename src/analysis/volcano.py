@@ -125,44 +125,37 @@ def _to_tuple_2(s: Optional[str]):
 def _main(argv=None) -> None:
     args = _parse_args(argv)
     cfg_all = get_cfg(args.config) or {}
-    # Allow single-file YAML with sections.
     cfg_section = cfg_all.get(args.config_section, cfg_all)
 
-    # Resolve input CSV path
-    in_csv_paths = resolve_path(
-        cli_path=[args.in_csv] if args.in_csv else None,
-        cfg=cfg_all,
-        config_key="in_csv_file",
-        config_section=args.config_section,
-    )
-    in_csv = in_csv_paths[0]
+    # --- File paths from CLI (required for Snakemake) ---
+    if not args.in_csv or not args.out_png:
+        raise SystemExit("Error: --in-csv and --out-png are required when running via Snakemake")
+    
+    in_csv = args.in_csv
+    out_png = args.out_png
 
-    # Resolve output png path
-    out_png_paths = resolve_path(
-        cli_path=[args.out_png] if args.out_png else None,
-        cfg=cfg_all,
-        config_key="out_png_file",
-        config_section=args.config_section,
-    )
-    out_png = out_png_paths[0]
-
+    # --- Analysis parameters from config or CLI ---
     padj = pick(args.padj_cutoff, cfg_section, "padj_cutoff", 0.05)
     l2fc = pick(args.log2fc_cutoff, cfg_section, "log2fc_cutoff", 1.0)
     xlim = _to_tuple_2(args.xlim) if args.xlim else cfg_section.get("xlim")
     ylim = _to_tuple_2(args.ylim) if args.ylim else cfg_section.get("ylim")
     max_labels = pick(args.max_labels, cfg_section, "max_labels", 30)
 
-    # Resolve optional annotation file path
-    annotate_paths = resolve_path(
-        cli_path=[args.annotate] if args.annotate else None, 
-        cfg=cfg_all, config_key="annotate_file", config_section=args.config_section,
-        is_input=True  # Treat as an input file, relative to project root
-    )
-    annotate_file = annotate_paths[0] if annotate_paths else None
-    
-    if not in_csv or not out_png:
-        raise SystemExit("Provide --config or both --in-csv and --out-png")
+    # Optional annotation file (project-root-relative if from config)
+    annotate_file = None
+    if args.annotate:
+        annotate_file = args.annotate
+    else:
+        annotate_paths = resolve_path(
+            cli_path=None, 
+            cfg=cfg_all, 
+            config_key="annotate_file", 
+            config_section=args.config_section,
+            is_input=True
+        )
+        annotate_file = annotate_paths[0] if annotate_paths else None
 
+    # --- Generate volcano plot ---
     df = pd.read_csv(in_csv)
     genes = read_gene_list(annotate_file) if annotate_file else None
     plot_volcano(df, out_png, padj, l2fc, xlim=xlim, ylim=ylim,

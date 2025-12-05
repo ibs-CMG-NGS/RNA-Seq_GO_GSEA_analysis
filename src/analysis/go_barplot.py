@@ -105,38 +105,25 @@ def _parse_args(argv=None) -> argparse.Namespace:
 def _main(argv=None) -> None:
     args = _parse_args(argv)
     cfg_all = get_cfg(args.config) or {}
-    # Allow single-file YAML with sections.
     cfg_section = cfg_all.get(args.config_section, cfg_all)
 
+    # --- Analysis parameters from config ---
     top_n = pick(args.top_n, cfg_section, "top_n", 12)
     ns = pick(args.namespaces, cfg_section, "namespaces", ["BP", "MF", "CC"])
     if isinstance(ns, str) and ns != "ALL":
         ns = [x.strip() for x in ns.split(',') if x.strip()]
 
-    # Define pairs of input CSVs and their corresponding output PNGs
-    plot_tasks = {
-        "main": (args.in_csv, args.out_png, "goea_csv_file", "out_png_file", "go_enrich"),
-        "up": (args.in_up_csv, args.out_up_png, "goea_up_csv_file", "out_up_png_file", "go_enrich"),
-        "down": (args.in_down_csv, args.out_down_png, "goea_down_csv_file", "out_down_png_file", "go_enrich"),
-    }
+    # --- Process each plot task (all, up, down) ---
+    tasks = [
+        ("all", args.in_csv, args.out_png),
+        ("up", args.in_up_csv, args.out_up_png),
+        ("down", args.in_down_csv, args.out_down_png),
+    ]
 
-    for task_name, (cli_in, cli_out, cfg_in_key, cfg_out_key, in_section) in plot_tasks.items():
-        # Resolve paths for input and output. These are intermediate files,
-        # so they should be relative to the sample's ROOT_DIR (is_input=False).
-        in_paths = resolve_path(
-            cli_path=[cli_in] if cli_in else None,
-            cfg=cfg_all, config_key=cfg_in_key, config_section=in_section
-        )
-        out_paths = resolve_path(
-            cli_path=[cli_out] if cli_out else None,
-            cfg=cfg_all, config_key=cfg_out_key, config_section=args.config_section # Output is in its own section
-        )
-
-        if in_paths and out_paths:
-            in_csv = in_paths[0]
-            out_png = out_paths[0]
+    for label, in_csv, out_png in tasks:
+        if in_csv and out_png:
             if not Path(in_csv).exists():
-                log.warning(f"Skipping plot for '{task_name}': Input file not found: {in_csv}")
+                log.warning(f"Skipping plot for '{label}': Input file not found: {in_csv}")
                 continue
             df = pd.read_csv(in_csv)
             plot_go_bar(df, out_png, top_n=int(top_n), namespaces=ns if ns else ("BP", "MF", "CC"))

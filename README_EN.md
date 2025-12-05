@@ -1114,6 +1114,106 @@ Required reference files are not included in the repository due to size:
 
 Place reference files in the `ref/` directory.
 
+### Using Custom Gene Sets for GSEA
+
+You can use your own custom gene sets for GSEA analysis by placing them in the `ref/` directory. Gene sets should be in **GMT format** (Gene Matrix Transposed).
+
+#### GMT Format Structure
+
+A GMT file is a tab-delimited text file where each line represents a gene set:
+
+```
+PATHWAY_NAME    DESCRIPTION    GENE1    GENE2    GENE3    ...
+```
+
+**Example GMT file** (`ref/my_custom_pathways.gmt`):
+```
+SYNAPSE_GENES    Synaptic_Function_Related    Shank1    Shank2    Shank3    Dlg4    Syngap1
+GABA_SIGNALING    GABAergic_Neurotransmission    Gad1    Gad2    Slc32a1    Gabra1    Gabrb2
+GLUTAMATE_RECEPTORS    Glutamatergic_Signaling    Grin1    Grin2a    Grin2b    Gria1    Gria2
+```
+
+Each line contains:
+1. **Gene set name** (e.g., `SYNAPSE_GENES`)
+2. **Description** (e.g., `Synaptic_Function_Related`)
+3. **Gene symbols** (tab-separated, e.g., `Shank1    Shank2    Shank3`)
+
+#### Where to Obtain Gene Sets
+
+**1. MSigDB (Molecular Signatures Database)**
+- Visit [MSigDB Downloads](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp)
+- Choose appropriate collection:
+  - **H: Hallmark gene sets** - Well-defined biological states/processes
+  - **C2: Curated gene sets** - From online pathway databases (KEGG, Reactome, BioCarta)
+  - **C5: Ontology gene sets** - Gene Ontology terms
+  - **C6: Oncogenic signatures** - Cancer-related signatures
+- Select organism (Human or Mouse)
+- Download as GMT file
+
+**2. Custom Gene Sets from Literature**
+- Extract gene lists from published papers
+- Create your own GMT file with genes of interest
+- Group genes by functional categories or pathways
+
+**3. GO Terms**
+- Convert GO annotations to GMT format
+- Use specific GO terms relevant to your research
+
+**4. Tissue/Cell-Type Specific Markers**
+- Use marker genes from single-cell RNA-seq databases
+- CellMarker database: [http://xteam.xbio.top/CellMarker/](http://xteam.xbio.top/CellMarker/)
+- PanglaoDB: [https://panglaodb.se/](https://panglaodb.se/)
+
+#### Using Custom Gene Sets in Analysis
+
+**In YAML configuration** (`workflow/config/gsea_config.yaml`):
+
+```yaml
+gsea_analysis:
+  mode: prerank  # or "classic"
+  
+  # Use your custom gene set file
+  gene_sets:
+    - "ref/my_custom_pathways.gmt"
+    - "ref/synapse_related_genes.gmt"
+  
+  # Or use MSigDB collections
+  # gene_sets:
+  #   - "ref/h.all.v2025.1.Mm.symbols.gmt"     # Hallmark
+  #   - "ref/c2.cp.kegg.v2025.1.Mm.symbols.gmt"  # KEGG pathways
+  
+  min_size: 5      # Minimum genes in a gene set
+  max_size: 500    # Maximum genes in a gene set
+  permutation_num: 1000
+```
+
+**Example: Creating a Custom Autism-Related Gene Set**
+
+```bash
+# Create custom GMT file
+cat > ref/autism_gene_sets.gmt << EOF
+ASD_RISK_GENES	Autism_Spectrum_Disorder_Risk_Genes	CHD8	SHANK3	NLGN3	NRXN1	SCN2A	SYNGAP1	PTEN	TSC1	TSC2
+SYNAPTIC_ADHESION	Synaptic_Adhesion_Molecules	NLGN1	NLGN2	NLGN3	NLGN4X	NRXN1	NRXN2	NRXN3	LRRTM1	LRRTM2
+EXCITATORY_SYNAPSE	Excitatory_Synapse_Proteins	DLG4	GRIN1	GRIN2A	GRIN2B	SHANK1	SHANK2	SHANK3	HOMER1	SYNGAP1
+EOF
+```
+
+Then use it in your analysis:
+```yaml
+gsea_analysis:
+  gene_sets:
+    - "ref/autism_gene_sets.gmt"
+```
+
+#### Best Practices for Custom Gene Sets
+
+1. **Gene Symbol Format**: Ensure gene symbols match your data (human: UPPERCASE, mouse: Capitalize)
+2. **Size Constraints**: Keep gene sets between 5-500 genes for meaningful enrichment
+3. **Documentation**: Include descriptive names and descriptions in your GMT file
+4. **Version Control**: Keep GMT files in version control with your analysis
+5. **Validation**: Test with a small subset before running full analysis
+6. **Organism Compatibility**: Match gene sets to your organism (human vs mouse)
+
 ### Tutorials and Documentation
 
 - **[API Reference](docs/API_REFERENCE.md)** - Complete Python API documentation for programmatic usage

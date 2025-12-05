@@ -1,38 +1,54 @@
-# Single YAML with per-step sections (edit paths as needed)
-ROOT_DIR: "data/processed/Shank2" # This will be the default output directory
+# ============================================================
+# GO Analysis Pipeline Configuration
+# ============================================================
+# This config contains ONLY analysis parameters for the main
+# Snakemake GO enrichment pipeline.
+# File paths are managed by Snakemake rules.
+#
+# For additional standalone analyses, see:
+#   - configs/deg_comparison_Shank2.yaml  (DEG comparison)
+#   - configs/gene_filter_Shank2.yaml     (Gene filter analysis)
+# ============================================================
 
+# Output directory - Snakemake will create intermediate files here
+ROOT_DIR: "data/processed/Shank2"
+
+# ============================================================
+# Data Loading
+# ============================================================
 data_loading:
+  # Input data source
   excel_path: "data/processed/Shank2/Shank2_RNA-seq_result.xlsx"
   sheets: "3W-HT" # or "all"
+  
+  # Column mapping from Excel to standardized format
   gene_col: "Mouse symbol"
   log2fc_col: "log2FC"
   padj_col: "adjusted p-value"
-  csv_file: "standardized.csv"
-  # --- GSEA 파일 생성을 위한 섹션 ---
+  
+  # --- GSEA 파일 생성을 위한 섹션 (Optional) ---
   gsea_outputs:
     enabled: true # 이 기능을 사용할지 여부를 결정하는 마스터 스위치
-    expression_matrix_file: "gsea_expression_matrix.txt" # Classic GSEA용 Expression Matrix 파일 경로
-    class_labels_file: "gsea_class_labels.cls" # Classic GSEA용 Class Labels (.cls) 파일 경로
     # 원본 데이터에서 각 그룹에 해당하는 샘플 컬럼들을 명시
     # 'HT'와 'WT'는 클래스(그룹) 이름이 됩니다.
     sample_columns:
       HT: ["HT1", "HT2", "HT3", "HT4", "HT5"]
       WT: ["WT1", "WT2", "WT3", "WT4", "WT5"]
 
+# ============================================================
+# DEG Filtering
+# ============================================================
 filtering:
-  in_csv_file: "standardized.csv"
   mode: thresholds  # thresholds | gene_list
   padj_cutoff: 0.05
   log2fc_cutoff: 0  # if 0, no log2FC filtering
   direction: both   # up | down | both
-  # gene_list_file: "genes_of_interest.txt"
-  out_csv_file: "filtered.csv"
-  out_up_genes_file: "filtered_up_genes.txt"
-  out_down_genes_file: "filtered_down_genes.txt"
+  # For gene_list mode: gene_list_file: "configs/genes_of_interest.txt"
 
+# ============================================================
+# Volcano Plot
+# ============================================================
 volcano:
-  in_csv_file: "standardized.csv"
-  out_png_file: "volcano.png"
   padj_cutoff: 0.05
   log2fc_cutoff: 0 # if 0, no log2FC cutoff line
   xlim: 
@@ -40,121 +56,30 @@ volcano:
   # annotate_file: genes_of_interest.txt
   max_labels: 30
 
-# =================================
-# Gene Ontology Analysis Settings
-# =================================
+# ============================================================
+# GO Enrichment Analysis
+# ============================================================
 go_enrich:
-  # EITHER provide genes_file OR filtered_csv
-  # genes_file: configs/genes_of_interest.txt
-  filtered_csv: "filtered.csv" # For combined analysis
-  up_genes_file: "filtered_up_genes.txt"
-  down_genes_file: "filtered_down_genes.txt"
-  # (REQUIRED) Path to the background gene list file.
-  # This should be a CSV file with a "gene" column containing all genes
-  # expressed in the experiment, typically the output of the data_loading step.
-  background_csv: "standardized.csv"
+  # Reference files (project-level resources)
   obo: "ref/go-basic.obo"
   gaf: "ref/goa_mouse.gaf"
-  gaf_file: "ref/goa_mouse.gaf"
-  taxon: 10090 # Add this line for mouse (Mus musculus) for human use 9606
+  
+  # Analysis parameters
+  taxon: 10090 # Mouse (Mus musculus). For human use 9606
   alpha: 0.05
-  goea_csv_file: "goea_results_all.csv"
-  goea_up_csv_file: "goea_results_up.csv"
-  goea_down_csv_file: "goea_results_down.csv"
+  mt: "fdr_bh"  # Multiple testing correction method
 
+# ============================================================
+# GO Barplot Visualization
+# ============================================================
 go_barplot:
-  out_png_file: "go_barplot_all.png"
-  out_up_png_file: "go_barplot_up.png"
-  out_down_png_file: "go_barplot_down.png"
   top_n: 10
   namespaces: ["BP", "MF", "CC"]  # or "ALL"
 
+# ============================================================
+# Report Generation
+# ============================================================
 report:
-  standardized_csv_file: "standardized.csv"
-  filtered_csv_file: "filtered.csv"
-  volcano_png_file: "volcano.png"
-  goea_csv_file: "goea_results_all.csv" # Optional input
-  go_barplot_png_file: "go_barplot_all.png"
-  goea_up_csv_file: "goea_results_up.csv"
-  go_up_barplot_png_file: "go_barplot_up.png"
-  goea_down_csv_file: "goea_results_down.csv"
-  go_down_barplot_png_file: "go_barplot_down.png"
-  out_html_file: "report.html"
   title: "GO Analysis Report"
   sample_name: "Shank2_3W-HT"
   author: "YGKim"
-
-deg_comparison:
-  # 비교할 두 개의 DEG 결과 파일을 지정합니다.
-  # 예시: file1: "filtered_KD_vs_Scr.csv", file2: "filtered_OE_vs_Scr.csv"
-  file1: "filtered_1d.csv" # 첫 번째 파일 경로 (예시)
-  file2: "filtered_3d.csv" # 두 번째 파일 경로 (예시)
-  name1: "Acute_1D" # 첫 번째 데이터셋 이름
-  name2: "Acute_3D" # 두 번째 데이터셋 이름
-
-  # --- Visualization Options ---
-  # Heatmap: 겹치는 유전자 중 log2FC가 가장 큰 N개(up)와 가장 작은 N개(down)를 각각 표시
-  heatmap_top_n: 10
-  heatmap_cmap: "bwr" # 추천: "coolwarm", "bwr", "viridis"
-  heatmap_annot_kws: { "size": 12 } # Heatmap 내부 글자 크기 조절
-
-  # Venn Diagram: 색상과 투명도 조절
-  venn_colors: ["#007acc", "#e85f02"]
-  venn_alpha: 0.5
-
-  out_venn_png: "comparison_DEGs_venn.png"
-  out_heatmap_png: "comparison_DEGsheatmap.png"
-
-gene_filter:
-  # 원본 데이터(Excel)가 있는 폴더 경로
-  # 비교할 표준화된 CSV 파일 목록
-  in_csv_files:
-    - "standardized_1d.csv"
-    - "standardized_3d.csv"
-  file_aliases: ["Acute_1D", "Acute_3D"] # 각 파일에 대한 별칭 (그래프 축 이름으로 사용)
-
-  # 분석 결과가 저장될 출력 폴더 경로
-  output_dir: "output/gene_filter_analysis" # ROOT_DIR 기준 상대 경로
-
-  # 분석 대상 유전자 목록 파일
-  gene_list_file: "configs/genes_of_interest.txt" # 프로젝트 루트 기준 경로로 수정
-
-  # 컬럼 이름 매핑
-  column_map:
-    gene: "gene"
-    log2fc: "log2fc"
-    padj: "padj"
-
-  # Dot plot 시각화 옵션
-  plot_options:
-    # 그림 크기 (너비, 높이)
-    figure_size: [5, 8] # 너비를 높이보다 작거나 비슷하게 설정 (예: [5, 8])
-
-    # X축 제목 (비워두면 기본값 'source_sheet' 사용)
-    xaxis_title: "Experimental Conditions"
-
-    # X축 눈금 이름 매핑 (비워두면 원본 시트 이름 사용)
-    xaxis_tick_map:
-      Acute_1D_Genename: "Acute 1D"
-      Acute_3D_Genename: "Acute 3D"
-
-    # Log2FC 색상 범위 (최소, 최대)
-    color_norm: [-2, 2]
-
-    # P-value에 따른 점 크기 매핑
-    size_map:
-      'p < 0.01': 200
-      'p < 0.05': 100
-      'p > 0.05': 20
-
-    # Dot outline options
-    dot_outline_color: "gray" # Set to null or "" for no outline
-    dot_outline_width: 0.5
-
-    # Colorbar options
-    colorbar_width: 0.05  # Relative width of the colorbar
-    colorbar_height_ratio: 0.15 # Relative height of the colorbar compared to the main plot
-    colorbar_x_offset: 0.1 # X-offset from the right edge of the main plot for legend/colorbar
-    colorbar_y_offset: 0.05 # Y-offset from the bottom of the size legend for the colorbar
-    colorbar_ticks: [-2, 0, 2] # Specific tick values for the colorbar
-    # colorbar_ticklabels: ["Low", "Mid", "High"] # Specific tick labels for the colorbar

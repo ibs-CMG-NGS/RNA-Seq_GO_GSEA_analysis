@@ -1,0 +1,32 @@
+# ============================================================
+# DEG Comparison Analysis Configuration
+# ============================================================
+# This config is for standalone DEG comparison analysis
+# (NOT part of the main Snakemake GO pipeline)
+# ============================================================
+
+ROOT_DIR: "data/processed/Shank2"
+
+# ============================================================
+# DEG Comparison (Venn Diagram & Heatmap)
+# ============================================================
+deg_comparison:
+  # 비교할 두 개의 DEG 결과 파일을 지정합니다.
+  file1: "filtered_3W-HT.csv" # 첫 번째 파일 경로 (예시)
+  file2: "filtered_12W-HT.csv" # 두 번째 파일 경로 (예시)
+  name1: "Shank2_3W" # 첫 번째 데이터셋 이름
+  name2: "Shank2_12W" # 두 번째 데이터셋 이름
+
+  # --- Visualization Options ---
+  # Heatmap: 겹치는 유전자 중 log2FC가 가장 큰 N개(up)와 가장 작은 N개(down)를 각각 표시
+  heatmap_top_n: 10
+  heatmap_cmap: "bwr" # 추천: "coolwarm", "bwr", "viridis"
+  heatmap_annot_kws: { "size": 12 } # Heatmap 내부 글자 크기 조절
+
+  # Venn Diagram: 색상과 투명도 조절
+  venn_colors: ["#007acc", "#e85f02"]
+  venn_alpha: 0.5
+
+  # Output files
+  out_venn_png: "comparison_DEGs_venn.png"
+  out_heatmap_png: "comparison_DEGs_heatmap.png"

@@ -157,45 +157,44 @@ def _main(argv=None) -> None:
     cfg_all = get_cfg(args.config) or {}
     cfg_section = cfg_all.get(args.config_section, {})
 
-    # --- Resolve all paths consistently ---
-    # Helper to resolve a single optional path.
-    # These are all intermediate files, so they are relative to ROOT_DIR (is_input=False).
-    def _resolve_single_path(arg_val, key):
-        paths = resolve_path(
-            cli_path=[arg_val] if arg_val else None,
-            cfg=cfg_all, config_key=key, config_section=args.config_section
-        )
-        # Return path only if it exists, as these are optional inputs
-        path = paths[0] if paths else None
+    # --- File paths from CLI (required for Snakemake) ---
+    # All input files must be provided via CLI when called from Snakemake
+    required_inputs = {
+        "standardized_csv": args.standardized_csv,
+        "filtered_csv": args.filtered_csv,
+        "volcano_png": args.volcano_png,
+        "go_barplot_png": args.go_barplot_png,
+        "out_html": args.out_html,
+    }
+    
+    if not all(required_inputs.values()):
+        missing = [k for k, v in required_inputs.items() if not v]
+        raise SystemExit(f"Error: Missing required arguments: {missing}")
+
+    # Optional inputs
+    def _check_exists(path):
         return path if (path and Path(path).exists()) else None
 
-    # Resolve all required and optional paths
-    std_csv = _resolve_single_path(args.standardized_csv, "standardized_csv_file")
-    filt_csv = _resolve_single_path(args.filtered_csv, "filtered_csv_file")
-    volcano_png = _resolve_single_path(args.volcano_png, "volcano_png_file")
-    go_bar_png = _resolve_single_path(args.go_barplot_png, "go_barplot_png_file")
+    std_csv = args.standardized_csv
+    filt_csv = args.filtered_csv
+    volcano_png = args.volcano_png
+    go_bar_png = args.go_barplot_png
     
-    # The main GOEA result is optional
-    go_csv = _resolve_single_path(args.goea_csv, "goea_csv_file")
-
-    # Up/Down regulated results are also optional
-    go_up_csv = _resolve_single_path(args.goea_up_csv, "goea_up_csv_file")
-    go_up_png = _resolve_single_path(args.go_up_barplot_png, "go_up_barplot_png_file")
-    go_down_csv = _resolve_single_path(args.goea_down_csv, "goea_down_csv_file")
-    go_down_png = _resolve_single_path(args.go_down_barplot_png, "go_down_barplot_png_file")
+    # Optional GOEA results
+    go_csv = _check_exists(args.goea_csv)
+    go_up_csv = _check_exists(args.goea_up_csv)
+    go_up_png = _check_exists(args.go_up_barplot_png)
+    go_down_csv = _check_exists(args.goea_down_csv)
+    go_down_png = _check_exists(args.go_down_barplot_png)
     
-    # Output path is required
-    out_html_paths = resolve_path(cli_path=[args.out_html] if args.out_html else None, cfg=cfg_all, config_key="out_html_file", config_section=args.config_section)
-    out_html = out_html_paths[0] if out_html_paths else None
+    out_html = args.out_html
 
-    # Pick non-path parameters
+    # --- Report metadata from config ---
     title = pick(args.title, cfg_section, "title", "GO Analysis Report")
     sample_name = pick(args.sample_name, cfg_section, "sample_name", "")
     author = pick(args.author, cfg_section, "author", "")
 
-    if not (std_csv and filt_csv and volcano_png and go_bar_png and out_html):
-        raise SystemExit("Missing required inputs: std_csv, filt_csv, volcano_png, go_barplot_png, out_html")
-
+    # --- Generate report ---
     html = build_report_html(
         std_csv, filt_csv, volcano_png,
         go_csv, go_bar_png, go_up_csv, go_up_png, go_down_csv, go_down_png,

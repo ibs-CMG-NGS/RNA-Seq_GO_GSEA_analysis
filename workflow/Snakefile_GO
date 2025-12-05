@@ -44,6 +44,7 @@ rule data_loading:
         python src/analysis/data_loading.py \
             --config {params.config} \
             --config-section {params.section} \
+            --out-csv {output.csv} \
             2>&1 | tee {log}
         """
 
@@ -67,6 +68,10 @@ rule filtering:
         python src/analysis/filtering.py \
             --config {params.config} \
             --config-section {params.section} \
+            --in-csv {input.csv} \
+            --out-csv {output.filtered} \
+            --out-up-genes {output.up_genes} \
+            --out-down-genes {output.down_genes} \
             2>&1 | tee {log}
         """
 
@@ -88,6 +93,8 @@ rule volcano:
         python src/analysis/volcano.py \
             --config {params.config} \
             --config-section {params.section} \
+            --in-csv {input.csv} \
+            --out-png {output.plot} \
             2>&1 | tee {log}
         """
 
@@ -114,6 +121,13 @@ rule go_enrich:
         python src/analysis/go_enrich.py \
             --config {params.config} \
             --config-section {params.section} \
+            --filtered-csv {input.filtered} \
+            --up-genes-file {input.up_genes} \
+            --down-genes-file {input.down_genes} \
+            --background-csv {input.background} \
+            --out-csv {output.go_all} \
+            --out-up-csv {output.go_up} \
+            --out-down-csv {output.go_down} \
             2>&1 | tee {log}
         """
 
@@ -139,6 +153,12 @@ rule go_barplot:
         python src/analysis/go_barplot.py \
             --config {params.config} \
             --config-section {params.section} \
+            --in-csv {input.go_all} \
+            --out-png {output.plot_all} \
+            --in-up-csv {input.go_up} \
+            --out-up-png {output.plot_up} \
+            --in-down-csv {input.go_down} \
+            --out-down-png {output.plot_down} \
             2>&1 | tee {log}
         """
 
@@ -168,5 +188,15 @@ rule report_generation:
         python src/analysis/report_generation.py \
             --config {params.config} \
             --config-section {params.section} \
+            --standardized-csv {input.standardized} \
+            --filtered-csv {input.filtered} \
+            --volcano-png {input.volcano} \
+            --goea-csv {input.go_all} \
+            --go-barplot-png {input.plot_all} \
+            --goea-up-csv {input.go_up} \
+            --go-up-barplot-png {input.plot_up} \
+            --goea-down-csv {input.go_down} \
+            --go-down-barplot-png {input.plot_down} \
+            --out-html {output.report} \
             2>&1 | tee {log}
         """

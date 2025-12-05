@@ -143,82 +143,68 @@ def _parse_args(argv=None) -> argparse.Namespace:
 def _main(argv=None) -> None:
     args = _parse_args(argv)
     cfg_all = get_cfg(args.config) or {}
-    # Allow single-file YAML with sections.
     cfg_section = cfg_all.get(args.config_section, cfg_all)
     
-    # --- Resolve all input and output paths first ---
-    
-    # Helper to resolve a single optional path
-    def _resolve_single_path(arg_val, key, is_input=False):
-        paths = resolve_path(
-            cli_path=[arg_val] if arg_val else None,
-            cfg=cfg_all, config_key=key, config_section=args.config_section,
-            is_input=is_input
-        )
-        return paths[0] if paths else None
-
-    # Resolve input paths (relative to project root)
-    background_csv_paths = resolve_path(
-        cli_path=[args.background_csv] if args.background_csv else None,
-        cfg=cfg_all, config_key="background_csv", config_section=args.config_section,
-        is_input=False  # Should be relative to ROOT_DIR, not project root
-    )
-    background_csv = background_csv_paths[0] if background_csv_paths else None
-
-    gene_sources = {
-        "genes_file": _resolve_single_path(args.genes_file, "genes_file", is_input=True), # Project-relative
-        "filtered_csv": _resolve_single_path(args.filtered_csv, "filtered_csv"), # ROOT_DIR-relative
-        "up_genes_file": _resolve_single_path(args.up_genes_file, "up_genes_file"), # ROOT_DIR-relative
-        "down_genes_file": _resolve_single_path(args.down_genes_file, "down_genes_file"), # ROOT_DIR-relative
-    }
-    obo = _resolve_single_path(args.obo, "obo", is_input=True)
-    gaf = _resolve_single_path(args.gaf, "gaf", is_input=True)
-
-    # Resolve output paths (relative to ROOT_DIR)
-    out_paths = {
-        "out_csv": _resolve_single_path(args.out_csv, "goea_csv_file"), # Corrected from args.in_csv
-        "out_up_csv": _resolve_single_path(args.out_up_csv, "goea_up_csv_file"),
-        "out_down_csv": _resolve_single_path(args.out_down_csv, "goea_down_csv_file"),
-    }
-
+    # --- Analysis parameters from config ---
     alpha = pick(args.alpha, cfg_section, "alpha", 0.05)
     mt = pick(args.mt, cfg_section, "mt", "fdr_bh")
-    taxon = pick(args.taxon, cfg_section, "taxon", "9606") # Add this line
+    taxon = pick(args.taxon, cfg_section, "taxon", "9606")
 
+    # --- Reference files (project-root-relative) ---
+    obo_paths = resolve_path(
+        cli_path=[args.obo] if args.obo else None,
+        cfg=cfg_all, config_key="obo", config_section=args.config_section,
+        is_input=True
+    )
+    obo = obo_paths[0] if obo_paths else None
+
+    gaf_paths = resolve_path(
+        cli_path=[args.gaf] if args.gaf else None,
+        cfg=cfg_all, config_key="gaf", config_section=args.config_section,
+        is_input=True
+    )
+    gaf = gaf_paths[0] if gaf_paths else None
+
+    if not obo or not gaf:
+        raise SystemExit("Error: GO reference files (obo, gaf) are required")
+
+    # --- Background genes (from CLI or inferred) ---
+    background_csv = args.background_csv if args.background_csv else None
     if background_csv and Path(background_csv).exists():
         bg = pd.read_csv(background_csv)["gene"].dropna().astype(str).unique().tolist()
     else:
-        # Fallback: if no background, it will be derived from the gene list itself later
         bg = []
         log.warning("No background CSV provided. Using study genes as background, which may bias results.")
 
-    source_map = {
-        "out_csv": "genes_file" if gene_sources.get("genes_file") else "filtered_csv",
-        "out_up_csv": "up_genes_file",
-        "out_down_csv": "down_genes_file",
-    }
+    # --- Process each gene set (all, up, down) ---
+    # Map output files to their corresponding input gene files
+    tasks = []
+    
+    if args.filtered_csv and args.out_csv:
+        tasks.append(("all", args.filtered_csv, args.out_csv, "filtered_csv"))
+    if args.up_genes_file and args.out_up_csv:
+        tasks.append(("up", args.up_genes_file, args.out_up_csv, "genes_file"))
+    if args.down_genes_file and args.out_down_csv:
+        tasks.append(("down", args.down_genes_file, args.out_down_csv, "genes_file"))
 
-    for out_key, src_key in source_map.items():
-        if out_paths.get(out_key) and gene_sources.get(src_key):
-            in_path = gene_sources[src_key]
-            out_path = out_paths[out_key]
+    for label, in_path, out_path, file_type in tasks:
+        if file_type == "filtered_csv":
+            genes = pd.read_csv(in_path)["gene"].dropna().astype(str).unique().tolist()
+        else:  # genes_file
+            genes = sorted(read_gene_list(in_path))
 
-            if src_key == "filtered_csv":
-                genes = pd.read_csv(in_path)["gene"].dropna().astype(str).unique().tolist()
-            else:
-                genes = sorted(read_gene_list(in_path))
+        if not genes:
+            log.warning(f"Skipping {label}: No genes found in {in_path}")
+            continue
 
-            if not genes:
-                log.warning(f"Skipping {out_key}: No genes found in {in_path}")
-                continue
-
-            df_go = run_go_enrichment(genes, bg or genes, obo, gaf, alpha=alpha, multiple_testing=mt, taxon=taxon)
-            if df_go is None:
-                log.info(f"GOEA for {src_key} skipped or empty; nothing saved to {out_path}.")
-                continue
-            ensure_dir(Path(out_path).parent.as_posix())
-            df_go.to_csv(out_path, index=False)
-            log.info(f"Successfully saved GO enrichment results to {out_path}")
+        df_go = run_go_enrichment(genes, bg or genes, obo, gaf, alpha=alpha, multiple_testing=mt, taxon=taxon)
+        if df_go is None:
+            log.info(f"GOEA for {label} skipped or empty; nothing saved to {out_path}.")
+            continue
+        
+        ensure_dir(Path(out_path).parent.as_posix())
+        df_go.to_csv(out_path, index=False)
+        log.info(f"Successfully saved GO enrichment results ({label}) to {out_path}")
 
 
 if __name__ == "__main__":

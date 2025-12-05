@@ -197,10 +197,26 @@ def _main(argv=None) -> None:
     cfg_all = get_cfg(args.config) or {}
     cfg_section = cfg_all.get(args.config_section, {})
 
-    # --- 1. 데이터 로딩 및 표준화 ---
-    excel_paths = resolve_path(cli_path=args.excels, cfg=cfg_all, config_key="excel_path", config_section=args.config_section, is_input=True)
+    # --- 1. Load configuration parameters ---
+    # For Snakemake workflow, file paths come from CLI args (required)
+    # Config file provides ONLY analysis parameters
     
-    # Corrected 'pick' calls
+    # Excel input path - can come from CLI or config (for flexibility)
+    excel_paths = resolve_path(
+        cli_path=args.excels, 
+        cfg=cfg_all, 
+        config_key="excel_path", 
+        config_section=args.config_section, 
+        is_input=True
+    )
+    
+    # Output CSV - CLI arg takes precedence, config as fallback
+    if args.out_csv:
+        out_csv = Path(args.out_csv)
+    else:
+        raise SystemExit("Error: --out-csv is required when running via Snakemake")
+    
+    # Analysis parameters from config
     sheets_arg = pick(args.sheets, cfg_section, "sheets")
     sheets = None if sheets_arg is None else (sheets_arg if sheets_arg == "all" else [s.strip() for s in str(sheets_arg).split(',')])
     
@@ -209,32 +225,30 @@ def _main(argv=None) -> None:
         "log2fc": pick(args.log2fc_col, cfg_section, "log2fc_col"),
         "padj": pick(args.padj_col, cfg_section, "padj_col"),
     }
-    
-    out_csv_paths = resolve_path(cli_path=[args.out_csv] if args.out_csv else None, cfg=cfg_all, config_key="csv_file", config_section=args.config_section)
 
-    if not excel_paths or not out_csv_paths or any(v is None for v in colmap.values()):
+    if not excel_paths or any(v is None for v in colmap.values()):
         raise SystemExit("Error: Could not resolve required paths or column names from config or CLI args.")
 
-    out_csv = Path(out_csv_paths[0])
+    # --- 2. Load and standardize data ---
     df = load_excels(excel_paths, sheets, colmap)
     ensure_dir(out_csv.parent)
     df.to_csv(out_csv, index=False)
     logging.info(f"Saved standardized data to: {out_csv}")
 
-    # --- 2. GSEA 파일 생성 ---
+    # --- 3. Optional: Generate GSEA files ---
     gsea_cfg = cfg_section.get("gsea_outputs")
     if gsea_cfg and gsea_cfg.get("enabled"):
         logging.info("GSEA output generation is enabled.")
 
-        required_keys = ["sample_columns", "expression_matrix_file", "class_labels_file"]
-        if any(key not in gsea_cfg for key in required_keys):
-            raise SystemExit(f"Error: 'gsea_outputs' is enabled but is missing required keys: {required_keys}")
+        sample_map = gsea_cfg.get("sample_columns")
+        if not sample_map:
+            raise SystemExit("Error: 'gsea_outputs.sample_columns' is required when GSEA output is enabled")
 
+        # GSEA files go to same directory as output CSV
         output_dir = out_csv.parent
-        matrix_file_path = output_dir / gsea_cfg["expression_matrix_file"]
-        labels_file_path = output_dir / gsea_cfg["class_labels_file"]
+        matrix_file_path = output_dir / "gsea_expression_matrix.txt"
+        labels_file_path = output_dir / "gsea_class_labels.cls"
 
-        sample_map = gsea_cfg["sample_columns"]
         all_sample_cols = [col for cols in sample_map.values() for col in cols]
         
         create_gsea_expression_matrix(df, "gene", all_sample_cols, str(matrix_file_path))
