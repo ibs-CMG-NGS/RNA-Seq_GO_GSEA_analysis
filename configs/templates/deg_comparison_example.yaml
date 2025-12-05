@@ -1,8 +1,18 @@
 # ============================================================
-# DEG Comparison Analysis Configuration
+# DEG Comparison Analysis Configuration - EXAMPLE
 # ============================================================
-# This config is for standalone DEG comparison analysis
-# (NOT part of the main Snakemake GO pipeline)
+# This is an EXAMPLE configuration file for standalone DEG comparison.
+# 
+# Usage:
+#   1. Copy this file to configs/ directory:
+#      cp configs/templates/deg_comparison_example.yaml configs/deg_comparison_MyComparison.yaml
+#   
+#   2. Edit your copy with your specific file paths and parameters
+#   
+#   3. Run the comparison:
+#      python src/analysis/compare_degs.py --config configs/deg_comparison_MyComparison.yaml
+#
+# Note: This config is NOT tracked by Git, so you can safely customize it.
 # ============================================================
 
 ROOT_DIR: "data/processed/Shank2"

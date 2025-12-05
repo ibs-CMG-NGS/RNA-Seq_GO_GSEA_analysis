@@ -30,6 +30,13 @@ ref/
 # Logs
 *.log
 
+# Configuration files
+# Ignore all user configs in configs/, but keep templates and README
+configs/*
+!configs/templates/
+!configs/README.md
+!configs/.gitkeep
+
 # IDEs and editors
 .idea/                  # IntelliJ IDEA / PyCharm
 .vscode/                # VS Code

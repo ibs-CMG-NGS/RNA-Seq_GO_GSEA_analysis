@@ -1,14 +1,23 @@
 # ============================================================
-# Gene Filter Analysis Configuration Template
+# Gene Filter Analysis Configuration - EXAMPLE
 # ============================================================
-# This config is for analyzing specific genes across multiple datasets
-# (NOT part of the main Snakemake GO pipeline)
-#
+# This is an EXAMPLE configuration file for gene filter analysis.
+# 
 # Usage:
-#   python src/analysis/gene_filter_analysis.py --config configs/gene_filter_<sample>.yaml
+#   1. Copy this file to configs/ directory:
+#      cp configs/templates/gene_filter_example.yaml configs/gene_filter_MyGenes.yaml
+#   
+#   2. Create a gene list file (e.g., my_genes.txt) with one gene per line
+#   
+#   3. Edit your copy with your specific file paths and gene list
+#   
+#   4. Run the analysis:
+#      python src/analysis/gene_filter_analysis.py --config configs/gene_filter_MyGenes.yaml
+#
+# Note: This config is NOT tracked by Git, so you can safely customize it.
 # ============================================================
 
-ROOT_DIR: "data/processed/<SAMPLE_NAME>"
+ROOT_DIR: "data/processed/Shank2"
 
 # ============================================================
 # Gene Filter Analysis (Dot Plot)
@@ -16,11 +25,11 @@ ROOT_DIR: "data/processed/<SAMPLE_NAME>"
 gene_filter:
   # 비교할 표준화된 CSV 파일 목록
   in_csv_files:
-    - "standardized_condition1.csv"
-    - "standardized_condition2.csv"
+    - "standardized_3W-HT.csv"
+    - "standardized_12W-HT.csv"
   
   # 각 파일에 대한 별칭 (그래프 축 이름으로 사용)
-  file_aliases: ["Condition 1", "Condition 2"]
+  file_aliases: ["Shank2_3W", "Shank2_12W"]
 
   # 분석 결과가 저장될 출력 폴더 경로
   output_dir: "output/gene_filter_analysis" # ROOT_DIR 기준 상대 경로
@@ -40,12 +49,12 @@ gene_filter:
     figure_size: [5, 8]
 
     # X축 제목
-    xaxis_title: "Experimental Conditions"
+    xaxis_title: "Developmental Stages"
 
-    # X축 눈금 이름 매핑 (원본 파일명을 표시할 이름으로 변경)
+    # X축 눈금 이름 매핑
     xaxis_tick_map:
-      condition1: "Condition 1"
-      condition2: "Condition 2"
+      "3W-HT": "3 Weeks"
+      "12W-HT": "12 Weeks"
 
     # Log2FC 색상 범위 (최소, 최대)
     color_norm: [-2, 2]
