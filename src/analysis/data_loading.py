@@ -47,6 +47,24 @@ from utils.logging_utils_environ import setup_logging
 # 이미 존재하는 로그 파일을 사용하거나, 없으면 새로 만듭니다.
 logging, _ = setup_logging()
 
+# --- 프로젝트 루트 찾기 ---
+def find_project_root() -> Path:
+    """
+    Find project root directory by looking for marker files.
+    Searches upward from current file location.
+    """
+    current = Path(__file__).resolve()
+    for parent in [current.parent] + list(current.parents):
+        # Look for project markers
+        if (parent / 'setup.py').exists() or \
+           (parent / 'README.md').exists() or \
+           (parent / '.git').exists():
+            return parent
+    # Fallback to current working directory
+    return Path.cwd()
+
+PROJECT_ROOT = find_project_root()
+
 def _standardize_columns(df: pd.DataFrame, column_map: Dict[str, str]) -> pd.DataFrame:
     """
     Standardizes the columns of a DataFrame according to a provided mapping.
@@ -111,9 +129,12 @@ def load_excels(raw_excels: Sequence[str], sheets: Optional[Sequence[str] | str]
         Info on total rows loaded and number of files processed.
     """
     frames: List[pd.DataFrame] = []
+    missing_files = []
+    
     for fpath in raw_excels:
         if not os.path.exists(fpath):
             logging.warning("Excel not found: %s", fpath)
+            missing_files.append(fpath)
             continue
         xls = pd.ExcelFile(fpath)
         sheet_names_to_load = []
@@ -139,7 +160,22 @@ def load_excels(raw_excels: Sequence[str], sheets: Optional[Sequence[str] | str]
                 continue
                 
     if not frames:
-        raise RuntimeError("No data loaded. Check paths/sheets/columns.")
+        error_msg = "No data loaded. Check paths/sheets/columns."
+        if missing_files:
+            error_msg += f"\n\nMissing files ({len(missing_files)}):"
+            for mf in missing_files:
+                error_msg += f"\n  - {mf}"
+        if raw_excels:
+            error_msg += f"\n\nRequested files ({len(raw_excels)}):"
+            for rf in raw_excels:
+                exists = "✓ EXISTS" if os.path.exists(rf) else "✗ NOT FOUND"
+                error_msg += f"\n  - [{exists}] {rf}"
+        error_msg += f"\n\nColumn mapping required: {column_map}"
+        if sheets:
+            error_msg += f"\nSheets filter: {sheets}"
+        
+        logging.error(error_msg)
+        raise RuntimeError(error_msg)
         
     df = pd.concat(frames, ignore_index=True)
     logging.info("Loaded rows=%d from files=%d", len(df), len(raw_excels))
@@ -198,17 +234,28 @@ def _main(argv=None) -> None:
     cfg_section = cfg_all.get(args.config_section, {})
 
     # --- 1. Load configuration parameters ---
-    # For Snakemake workflow, file paths come from CLI args (required)
-    # Config file provides ONLY analysis parameters
+    # Determine project root for path resolution
+    root_dir = cfg_all.get('ROOT_DIR')
+    if root_dir:
+        root_path = PROJECT_ROOT / root_dir
+    else:
+        root_path = PROJECT_ROOT
     
-    # Excel input path - can come from CLI or config (for flexibility)
-    excel_paths = resolve_path(
-        cli_path=args.excels, 
-        cfg=cfg_all, 
-        config_key="excel_path", 
-        config_section=args.config_section, 
-        is_input=True
-    )
+    # Excel input paths - can come from CLI or config
+    if args.excels:
+        excel_paths = [str(PROJECT_ROOT / p if not Path(p).is_absolute() else p) for p in args.excels]
+    elif 'excel_path' in cfg_section:
+        excel_path = cfg_section['excel_path']
+        # Handle both single file and list of files
+        if isinstance(excel_path, list):
+            excel_paths = [str(PROJECT_ROOT / p if not Path(p).is_absolute() else p) for p in excel_path]
+        else:
+            excel_path_obj = Path(excel_path)
+            if not excel_path_obj.is_absolute():
+                excel_path_obj = PROJECT_ROOT / excel_path
+            excel_paths = [str(excel_path_obj)]
+    else:
+        raise SystemExit("Error: Excel file path required (via --excels or config 'excel_path')")
     
     # Output CSV - CLI arg takes precedence, config as fallback
     if args.out_csv:
@@ -227,7 +274,15 @@ def _main(argv=None) -> None:
     }
 
     if not excel_paths or any(v is None for v in colmap.values()):
-        raise SystemExit("Error: Could not resolve required paths or column names from config or CLI args.")
+        error_details = f"Error: Could not resolve required paths or column names.\n"
+        error_details += f"Project root: {PROJECT_ROOT}\n"
+        error_details += f"Excel paths: {excel_paths}\n"
+        error_details += f"Column map: {colmap}"
+        raise SystemExit(error_details)
+    
+    # Log resolved paths for debugging
+    logging.info(f"Project root: {PROJECT_ROOT}")
+    logging.info(f"Excel paths to load: {excel_paths}")
 
     # --- 2. Load and standardize data ---
     df = load_excels(excel_paths, sheets, colmap)
