@@ -170,9 +170,17 @@ def load_excels(raw_excels: Sequence[str], sheets: Optional[Sequence[str] | str]
 
 def create_gsea_expression_matrix(df: pd.DataFrame, gene_col: str, sample_cols: list, output_path: str):
     """Saves the expression data in a GSEA-compatible format (.txt)."""
-    if not all(col in df.columns for col in sample_cols):
-        logging.error(f"Cannot create GSEA matrix. Not all sample columns defined in YAML were found in the data. Missing: {set(sample_cols) - set(df.columns)}")
-        return
+    missing_cols = set(sample_cols) - set(df.columns)
+    if missing_cols:
+        available_cols = list(df.columns)
+        error_msg = (
+            f"Cannot create GSEA expression matrix.\n"
+            f"Missing sample columns: {sorted(missing_cols)}\n"
+            f"Available columns in data: {available_cols}\n\n"
+            f"Please update your config file 'gsea_outputs.sample_columns' to match the actual column names in your Excel file."
+        )
+        logging.error(error_msg)
+        raise ValueError(error_msg)
     
     # Ensure gene names are strings to avoid gseapy isupper() error
     gsea_df = pd.DataFrame({"NAME": df[gene_col].astype(str), "DESCRIPTION": df[gene_col].astype(str)})
