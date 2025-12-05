@@ -1,8 +1,0 @@
-#### volcano.yaml
-Root_dir: "../data/processed/Shank2"
-padj_cutoff: 0.05
-log2fc_cutoff: 0
-xlim: [-2.5, 2.5]
-ylim: [-0.5, 9]
-annotate: null   # 또는 null
-max_labels: 30

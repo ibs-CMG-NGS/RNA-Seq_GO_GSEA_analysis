@@ -1,7 +1,0 @@
-#### filtering.yaml
-Root_dir: "../data/processed/Shank2"
-mode: thresholds              # or gene_list
-padj_cutoff: 0.05
-log2fc_cutoff: 0
-direction: both
-gene_list: data/lists/my_genes.txt   # mode=gene_list일 때만 사용

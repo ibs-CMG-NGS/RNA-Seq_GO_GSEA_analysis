@@ -1,7 +1,0 @@
-{
-    "excel_file": "3_CHD8_N2373K_HPC_Female_all_gene.xlsx",
-    "gene_list_file": "c:\\Users\\KimYG\\Documents\\GitHub\\RNA-Seq\\data\\processed\\H2O2\\genes_of_interest.txt",
-    "gene_symbol_column": "gene_symbol",
-    "abundance_columns": ["WT1", "WT2", "WT3", "KO1", "KO2", "KO3"],
-    "output_image_file": "heatmap.png"
-}

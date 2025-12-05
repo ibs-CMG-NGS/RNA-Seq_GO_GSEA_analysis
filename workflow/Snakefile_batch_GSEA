@@ -67,10 +67,14 @@ rule data_loading:
         # Create logs directory
         Path(log[0]).parent.mkdir(parents=True, exist_ok=True)
         
+        # Set pipeline log file for Python logging
+        pipeline_log = f"{OUTPUT_ROOT}/{params.sample}/logs/pipeline.log"
+        
         # Execute data loading
         shell(f"""
             source $(conda info --base)/etc/profile.d/conda.sh
             conda activate {CONDA_ENV}
+            export PIPELINE_LOG_FILE={pipeline_log}
             python src/analysis/data_loading.py \
                 --config {temp_config_path} \
                 --config-section data_loading \
@@ -91,6 +95,7 @@ rule gsea_analysis:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
         conda activate {CONDA_ENV}
+        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/gsea_analysis.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section gsea \
@@ -111,6 +116,7 @@ rule gsea_plot:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
         conda activate {CONDA_ENV}
+        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/gsea_plot.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section gsea_plot \

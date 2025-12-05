@@ -1,8 +1,0 @@
-#### data_loading.yaml
-Root_dir: "../data/processed/Shank2"
-excels: ["Shank2 RNA-seq result.xlsx"]
-sheets: "all"            # 또는 "all"
-gene_col: "HGNC symbol"
-log2fc_col: "log2FC"
-padj_col: "adjusted p-value"
-out_csv_name: all_data_standardized.csv

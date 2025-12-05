@@ -62,10 +62,14 @@ rule data_loading:
         # Create logs directory
         Path(log[0]).parent.mkdir(parents=True, exist_ok=True)
         
+        # Set pipeline log file for Python logging
+        pipeline_log = f"{OUTPUT_ROOT}/{params.sample}/logs/pipeline.log"
+        
         # Execute data loading (✅ fixed)
         shell(f"""
             source $(conda info --base)/etc/profile.d/conda.sh
             conda activate {CONDA_ENV}
+            export PIPELINE_LOG_FILE={pipeline_log}
             python src/analysis/data_loading.py \
                 --config {temp_config_path} \
                 --config-section data_loading \
@@ -88,6 +92,7 @@ rule filtering:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
         conda activate {CONDA_ENV}
+        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/filtering.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section filtering \
@@ -108,6 +113,7 @@ rule volcano:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
         conda activate {CONDA_ENV}
+        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/volcano.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section volcano \
@@ -133,6 +139,7 @@ rule go_enrich:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
         conda activate {CONDA_ENV}
+        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/go_enrich.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section go_enrich \
@@ -157,6 +164,7 @@ rule go_barplot:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
         conda activate {CONDA_ENV}
+        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/go_barplot.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section go_barplot \
@@ -185,6 +193,7 @@ rule report_generation:
         """
         source $(conda info --base)/etc/profile.d/conda.sh
         conda activate {CONDA_ENV}
+        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/report_generation.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section report \
