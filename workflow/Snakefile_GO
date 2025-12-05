@@ -1,9 +1,34 @@
 """
 Snakemake workflow for GO enrichment analysis pipeline
+
+Usage:
+    # Run with project-specific config (recommended)
+    snakemake --snakefile workflow/Snakefile_GO \\
+              --configfile configs/GO_pipeline_Shank2.yaml \\
+              --cores 4
+
+    # Run with default config
+    snakemake --snakefile workflow/Snakefile_GO \\
+              --configfile workflow/config/go_config.yaml \\
+              --cores 4
 """
 
 # Configuration
+# Default config file (can be overridden with --configfile)
 configfile: "workflow/config/go_config.yaml"
+
+# Ensure we're running from project root
+# Snakemake sets working directory to where Snakefile is called from
+import os
+from pathlib import Path
+
+# Validate that we're in project root
+if not Path("workflow/Snakefile_GO").exists():
+    raise WorkflowError(
+        "Please run Snakemake from the project root directory.\n"
+        "Current directory: {}\n"
+        "Expected to find: workflow/Snakefile_GO".format(os.getcwd())
+    )
 
 # Define the output directory
 OUTPUT_DIR = config.get("ROOT_DIR", "output/go_analysis")

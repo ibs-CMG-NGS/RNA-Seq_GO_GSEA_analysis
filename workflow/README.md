@@ -2,7 +2,23 @@
 
 This directory contains Snakemake workflow files for automating RNA-Seq post-analysis pipelines.
 
-## Workflow Files
+## ⚠️ Important: Run from Project Root
+
+**Always run Snakemake commands from the project root directory**, not from the `workflow/` directory.
+
+```bash
+# ✅ CORRECT
+cd /path/to/RNA-Seq_GO_GSEA_analysis
+snakemake --snakefile workflow/Snakefile_GO --configfile configs/GO_pipeline_Shank2.yaml --cores 4
+
+# ❌ WRONG - Don't run from workflow directory
+cd workflow
+snakemake --snakefile Snakefile_GO ...  # This will break path resolution!
+```
+
+---
+
+## 📁 Workflow Files
 
 ### Single Sample Workflows
 
@@ -13,42 +29,121 @@ This directory contains Snakemake workflow files for automating RNA-Seq post-ana
 
 - **Snakefile_batch_GO**: Batch processing of multiple samples through the GO enrichment pipeline
 
-## Configuration Files
+---
 
-Configuration files are located in `workflow/config/`:
+## 🎯 Configuration Files
 
-- `go_config.yaml`: Configuration for single-sample GO analysis
-- `gsea_config.yaml`: Configuration for single-sample GSEA analysis
-- `batch_go_config.yaml`: Configuration for batch GO analysis with multiple samples
+### Two-Tier Config System
 
-## Quick Start
+1. **Default Templates** (`workflow/config/`) - **Do NOT edit directly**
+   - `go_config.yaml` - GO pipeline defaults
+   - `gsea_config.yaml` - GSEA pipeline defaults  
+   - `batch_go_config_*.yaml` - Batch processing defaults
+
+2. **Project Configs** (`configs/`) - **Edit these for your projects**
+   - `GO_pipeline_Shank2.yaml` - Shank2 sample config
+   - `GO_pipeline_H2O2.yaml` - H2O2 sample config
+   - `GO_pipeline_CHD8.yaml` - CHD8 sample config
+
+See [CONFIG_STRUCTURE.md](../CONFIG_STRUCTURE.md) for detailed documentation.
+
+---
+
+## 🚀 Quick Start
 
 ### Run GO Analysis (Single Sample)
 
 ```bash
-# Activate Snakemake environment
-conda activate snakemake_env
+# 1. Navigate to project root (REQUIRED!)
+cd /path/to/RNA-Seq_GO_GSEA_analysis
 
-# Option 1: Using helper script (recommended)
-./workflow/scripts/run_snakemake_go.sh workflow/config/go_config.yaml
+# 2. Run with project-specific config
+snakemake --snakefile workflow/Snakefile_GO \
+          --configfile configs/GO_pipeline_Shank2.yaml \
+          --cores 4 --use-conda
 
-# Option 2: Direct Snakemake command
-snakemake --snakefile workflow/Snakefile_GO --configfile workflow/config/go_config.yaml --cores 1
+# 3. Dry-run first to check (recommended)
+snakemake -n --snakefile workflow/Snakefile_GO \
+          --configfile configs/GO_pipeline_Shank2.yaml
 ```
 
 ### Run GSEA Analysis (Single Sample)
 
 ```bash
-# Option 1: Using helper script (recommended)
-./workflow/scripts/run_snakemake_gsea.sh workflow/config/gsea_config.yaml
+cd /path/to/RNA-Seq_GO_GSEA_analysis
 
-# Option 2: Direct Snakemake command
-snakemake --snakefile workflow/Snakefile_GSEA --configfile workflow/config/gsea_config.yaml --cores 1
+snakemake --snakefile workflow/Snakefile_GSEA \
+          --configfile configs/GSEA_pipeline_Shank2.yaml \
+          --cores 4 --use-conda
 ```
 
 ### Run Batch GO Analysis (Multiple Samples)
 
 ```bash
+cd /path/to/RNA-Seq_GO_GSEA_analysis
+
+snakemake --snakefile workflow/Snakefile_batch_GO \
+          --configfile workflow/config/batch_go_config_Shank.yaml \
+          --cores 4 --use-conda
+```
+
+---
+
+## 📝 Creating Your Own Project Config
+
+```bash
+# 1. Copy existing config as template
+cp configs/GO_pipeline_Shank2.yaml configs/GO_pipeline_MyProject.yaml
+
+# 2. Edit the new config
+nano configs/GO_pipeline_MyProject.yaml
+
+# 3. Update at minimum:
+#    - ROOT_DIR: output directory
+#    - data_loading.excel_path: your data file
+#    - data_loading.sheets: sheet name(s)
+#    - report.sample_name: your sample name
+
+# 4. Run with your config
+snakemake --snakefile workflow/Snakefile_GO \
+          --configfile configs/GO_pipeline_MyProject.yaml \
+          --cores 4
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### File Not Found Errors
+
+If you see errors like:
+```
+Excel not found: /wrong/path/to/file.xlsx
+```
+
+**Check:**
+1. ✅ Are you in project root? (`pwd` should end with `RNA-Seq_GO_GSEA_analysis`)
+2. ✅ Is the path in your config relative to project root?
+3. ✅ Does the file exist? (`ls -la data/`)
+
+### Config Not Taking Effect
+
+**Solution:** Make sure you're using `--configfile` with your project config:
+```bash
+snakemake --snakefile workflow/Snakefile_GO \
+          --configfile configs/YOUR_CONFIG.yaml \  # ← Don't forget this!
+          --cores 4
+```
+
+---
+
+## 📚 Additional Documentation
+
+- [CONFIG_STRUCTURE.md](../CONFIG_STRUCTURE.md) - Detailed config organization guide
+- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Snakemake command reference
+- [../README.md](../README.md) - Main project documentation
+
+---bash
 # Option 1: Using helper script (recommended)
 ./workflow/scripts/run_snakemake_go.sh workflow/config/batch_go_config.yaml --batch
 

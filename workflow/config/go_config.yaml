@@ -1,20 +1,28 @@
 # ============================================================
-# GO Analysis Pipeline Configuration (Snakemake Workflow)
+# GO Analysis Pipeline - Default Configuration Template
 # ============================================================
-# This config contains ONLY analysis parameters.
-# File paths are managed by Snakemake rules.
+# This is the DEFAULT template used by Snakefile_GO.
+# For project-specific configs, copy this to configs/ directory
+# and customize, then run:
+#   snakemake --snakefile workflow/Snakefile_GO \
+#             --configfile configs/YOUR_PROJECT.yaml \
+#             --cores 4
+#
+# All paths are relative to PROJECT ROOT (where you run snakemake)
 # ============================================================
 
 # Output directory - Snakemake will create intermediate files here
-ROOT_DIR: "output/Shank2_3WHT"
+# OVERRIDE THIS in your project-specific config
+ROOT_DIR: "output/go_analysis_default"
 
 # ============================================================
 # Data Loading
 # ============================================================
 data_loading:
   # Input data source
-  excel_path: "data/Shank2_RNA-seq_result.xlsx"
-  sheets: "3W-HT" # or "all"
+  # OVERRIDE THIS in your project-specific config with actual file path
+  excel_path: "data/YOUR_DATA.xlsx"
+  sheets: "all" # or "all" or comma-separated list: "Sheet1,Sheet2"
   
   # Column mapping from Excel to standardized format
   gene_col: "Mouse symbol"

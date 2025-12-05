@@ -1,16 +1,19 @@
 # ============================================================
-# GO Analysis Pipeline Configuration
+# GO Analysis Pipeline Configuration - Shank2 Project
 # ============================================================
-# This config contains ONLY analysis parameters for the main
-# Snakemake GO enrichment pipeline.
-# File paths are managed by Snakemake rules.
+# Project-specific configuration for Shank2 3W-HT sample
 #
-# For additional standalone analyses, see:
-#   - configs/deg_comparison_Shank2.yaml  (DEG comparison)
-#   - configs/gene_filter_Shank2.yaml     (Gene filter analysis)
+# Usage:
+#   cd /path/to/RNA-Seq_GO_GSEA_analysis  # Must be in PROJECT ROOT
+#   snakemake --snakefile workflow/Snakefile_GO \
+#             --configfile configs/GO_pipeline_Shank2.yaml \
+#             --cores 4 --use-conda
+#
+# This config extends workflow/config/go_config.yaml
+# All paths are relative to project root
 # ============================================================
 
-# Output directory - Snakemake will create intermediate files here
+# Output directory - Results will be saved here
 ROOT_DIR: "output/Shank2_3WHT"
 
 # ============================================================
