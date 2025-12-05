@@ -1,30 +1,23 @@
 #!/bin/bash
-# Quick start script for running Snakemake GO analysis
+# Quick start script for running Snakemake GSEA analysis
 #
 # Usage:
-#   ./workflow/scripts/run_snakemake_go.sh workflow/config/go_config.yaml
-#   ./workflow/scripts/run_snakemake_go.sh workflow/config/batch_go_config.yaml --batch
+#   ./scripts/run_snakemake_gsea.sh configs/templates/gsea_config.yaml
 
 set -e  # Exit on error
 
 # Check if config file is provided
 if [ $# -eq 0 ]; then
     echo "Error: No configuration file provided"
-    echo "Usage: $0 <config_file> [--batch]"
+    echo "Usage: $0 <config_file>"
     echo ""
-    echo "Examples:"
-    echo "  $0 workflow/config/go_config.yaml"
-    echo "  $0 workflow/config/batch_go_config.yaml --batch"
+    echo "Example:"
+    echo "  $0 configs/templates/gsea_config.yaml"
     exit 1
 fi
 
 CONFIG_FILE=$1
-BATCH_MODE=false
-
-# Check for batch mode flag
-if [ "$2" = "--batch" ]; then
-    BATCH_MODE=true
-fi
+SNAKEFILE="Snakefile_GSEA"
 
 # Verify config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
@@ -32,15 +25,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
     exit 1
 fi
 
-# Select the appropriate Snakefile
-if [ "$BATCH_MODE" = true ]; then
-    SNAKEFILE="workflow/Snakefile_batch_GO"
-    echo "Running batch GO analysis..."
-else
-    SNAKEFILE="workflow/Snakefile_GO"
-    echo "Running single-sample GO analysis..."
-fi
-
+echo "Running GSEA analysis..."
 echo "Configuration: $CONFIG_FILE"
 echo "Snakefile: $SNAKEFILE"
 echo ""
@@ -60,7 +45,7 @@ read -r
 echo "=== Executing workflow ==="
 snakemake --snakefile "$SNAKEFILE" \
     --configfile "$CONFIG_FILE" \
-    --cores 4 \
+    --cores 2 \
     --printshellcmds
 
 echo ""

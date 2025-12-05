@@ -9,7 +9,7 @@ This directory contains Snakemake workflow files for automating RNA-Seq post-ana
 ```bash
 # ✅ CORRECT
 cd /path/to/RNA-Seq_GO_GSEA_analysis
-snakemake --snakefile workflow/Snakefile_GO --configfile configs/GO_pipeline_Shank2.yaml --cores 4
+snakemake --snakefile Snakefile_GO --configfile configs/GO_pipeline_Shank2.yaml --cores 4
 
 # ❌ WRONG - Don't run from workflow directory
 cd workflow
@@ -35,7 +35,7 @@ snakemake --snakefile Snakefile_GO ...  # This will break path resolution!
 
 ### Two-Tier Config System
 
-1. **Default Templates** (`workflow/config/`) - **Do NOT edit directly**
+1. **Default Templates** (`configs/templates/`) - **Do NOT edit directly**
    - `go_config.yaml` - GO pipeline defaults
    - `gsea_config.yaml` - GSEA pipeline defaults  
    - `batch_go_config_*.yaml` - Batch processing defaults
@@ -58,12 +58,12 @@ See [CONFIG_STRUCTURE.md](../CONFIG_STRUCTURE.md) for detailed documentation.
 cd /path/to/RNA-Seq_GO_GSEA_analysis
 
 # 2. Run with project-specific config
-snakemake --snakefile workflow/Snakefile_GO \
+snakemake --snakefile Snakefile_GO \
           --configfile configs/GO_pipeline_Shank2.yaml \
           --cores 4 --use-conda
 
 # 3. Dry-run first to check (recommended)
-snakemake -n --snakefile workflow/Snakefile_GO \
+snakemake -n --snakefile Snakefile_GO \
           --configfile configs/GO_pipeline_Shank2.yaml
 ```
 
@@ -72,7 +72,7 @@ snakemake -n --snakefile workflow/Snakefile_GO \
 ```bash
 cd /path/to/RNA-Seq_GO_GSEA_analysis
 
-snakemake --snakefile workflow/Snakefile_GSEA \
+snakemake --snakefile Snakefile_GSEA \
           --configfile configs/GSEA_pipeline_Shank2.yaml \
           --cores 4 --use-conda
 ```
@@ -82,8 +82,8 @@ snakemake --snakefile workflow/Snakefile_GSEA \
 ```bash
 cd /path/to/RNA-Seq_GO_GSEA_analysis
 
-snakemake --snakefile workflow/Snakefile_batch_GO \
-          --configfile workflow/config/batch_go_config_Shank.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+          --configfile configs/templates/batch_go_config_Shank.yaml \
           --cores 4 --use-conda
 ```
 
@@ -105,7 +105,7 @@ nano configs/GO_pipeline_MyProject.yaml
 #    - report.sample_name: your sample name
 
 # 4. Run with your config
-snakemake --snakefile workflow/Snakefile_GO \
+snakemake --snakefile Snakefile_GO \
           --configfile configs/GO_pipeline_MyProject.yaml \
           --cores 4
 ```
@@ -130,7 +130,7 @@ Excel not found: /wrong/path/to/file.xlsx
 
 **Solution:** Make sure you're using `--configfile` with your project config:
 ```bash
-snakemake --snakefile workflow/Snakefile_GO \
+snakemake --snakefile Snakefile_GO \
           --configfile configs/YOUR_CONFIG.yaml \  # ← Don't forget this!
           --cores 4
 ```
@@ -145,10 +145,10 @@ snakemake --snakefile workflow/Snakefile_GO \
 
 ---bash
 # Option 1: Using helper script (recommended)
-./workflow/scripts/run_snakemake_go.sh workflow/config/batch_go_config.yaml --batch
+./workflow/scripts/run_snakemake_go.sh configs/templates/batch_go_config.yaml --batch
 
 # Option 2: Direct Snakemake command
-snakemake --snakefile workflow/Snakefile_batch_GO --configfile workflow/config/batch_go_config.yaml --cores 4
+snakemake --snakefile Snakefile_batch_GO --configfile configs/templates/batch_go_config.yaml --cores 4
 ```
 
 ## Workflow Visualization
@@ -157,10 +157,10 @@ You can visualize the workflow DAG (Directed Acyclic Graph):
 
 ```bash
 # Generate workflow diagram
-snakemake --snakefile workflow/Snakefile_GO --configfile workflow/config/go_config.yaml --dag | dot -Tpng > dag.png
+snakemake --snakefile Snakefile_GO --configfile configs/templates/go_config.yaml --dag | dot -Tpng > dag.png
 
 # Generate rule graph
-snakemake --snakefile workflow/Snakefile_GO --configfile workflow/config/go_config.yaml --rulegraph | dot -Tpng > rulegraph.png
+snakemake --snakefile Snakefile_GO --configfile configs/templates/go_config.yaml --rulegraph | dot -Tpng > rulegraph.png
 ```
 
 ## Dry Run
@@ -168,7 +168,7 @@ snakemake --snakefile workflow/Snakefile_GO --configfile workflow/config/go_conf
 Before running the actual analysis, you can perform a dry run to see what would be executed:
 
 ```bash
-snakemake --snakefile workflow/Snakefile_GO --configfile workflow/config/go_config.yaml --dry-run
+snakemake --snakefile Snakefile_GO --configfile configs/templates/go_config.yaml --dry-run
 ```
 
 ## Parallel Execution
@@ -177,10 +177,10 @@ Snakemake can execute independent tasks in parallel. Use the `--cores` parameter
 
 ```bash
 # Use 4 CPU cores
-snakemake --snakefile workflow/Snakefile_batch_GO --configfile workflow/config/batch_go_config.yaml --cores 4
+snakemake --snakefile Snakefile_batch_GO --configfile configs/templates/batch_go_config.yaml --cores 4
 
 # Use all available cores
-snakemake --snakefile workflow/Snakefile_batch_GO --configfile workflow/config/batch_go_config.yaml --cores all
+snakemake --snakefile Snakefile_batch_GO --configfile configs/templates/batch_go_config.yaml --cores all
 ```
 
 ## Cluster Execution
@@ -188,8 +188,8 @@ snakemake --snakefile workflow/Snakefile_batch_GO --configfile workflow/config/b
 For HPC clusters with SLURM:
 
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "sbatch --time=01:00:00 --mem=8G" \
     --jobs 10
 ```

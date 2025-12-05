@@ -5,11 +5,10 @@
 #
 # Usage:
 #   cd /path/to/RNA-Seq_GO_GSEA_analysis  # Must be in PROJECT ROOT
-#   snakemake --snakefile workflow/Snakefile_GO \
+#   snakemake --snakefile Snakefile_GO \
 #             --configfile configs/GO_pipeline_Shank2.yaml \
 #             --cores 4 --use-conda
 #
-# This config extends workflow/config/go_config.yaml
 # All paths are relative to project root
 # ============================================================
 

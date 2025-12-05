@@ -220,15 +220,15 @@ conda activate snakemake_env
 #### Run Batch GO Analysis
 
 ```bash
-# Edit workflow/config/batch_go_config.yaml to specify your samples
+# Edit configs/templates/batch_go_config.yaml to specify your samples
 # Then run:
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 4
 
 # For dry-run (see what will be executed):
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --dry-run
 ```
 
@@ -236,13 +236,13 @@ snakemake --snakefile workflow/Snakefile_batch_GO \
 
 ```bash
 # GO enrichment analysis
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --cores 1
 
 # GSEA analysis
-snakemake --snakefile workflow/Snakefile_GSEA \
-    --configfile workflow/config/gsea_config.yaml \
+snakemake --snakefile Snakefile_GSEA \
+    --configfile configs/templates/gsea_config.yaml \
     --cores 1
 ```
 
@@ -250,8 +250,8 @@ snakemake --snakefile workflow/Snakefile_GSEA \
 
 ```bash
 # Generate workflow diagram (requires graphviz)
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --dag | dot -Tpng > workflow_dag.png
 ```
 
@@ -260,8 +260,8 @@ snakemake --snakefile workflow/Snakefile_GO \
 For SLURM clusters:
 
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "sbatch --time=02:00:00 --mem=16G --cpus-per-task=1" \
     --jobs 10
 ```
@@ -458,10 +458,10 @@ Edit the workflow configuration file for your analysis type:
 
 ```bash
 # For single GO analysis
-nano workflow/config/go_config.yaml
+nano configs/templates/go_config.yaml
 
 # For batch GO analysis
-nano workflow/config/batch_go_config.yaml
+nano configs/templates/batch_go_config.yaml
 ```
 
 #### 3. Dry Run (Preview)
@@ -470,13 +470,13 @@ Always preview what will be executed:
 
 ```bash
 # Single sample GO analysis
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --dry-run --printshellcmds
 
 # Batch GO analysis
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --dry-run --printshellcmds
 ```
 
@@ -484,13 +484,13 @@ snakemake --snakefile workflow/Snakefile_batch_GO \
 
 ```bash
 # Single sample (1 core)
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --cores 1
 
 # Batch processing (4 cores for parallel execution)
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 4
 ```
 
@@ -502,18 +502,18 @@ Generate visual representations of your workflow:
 
 ```bash
 # DAG (Directed Acyclic Graph) showing all jobs
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --dag | dot -Tpng > workflow_dag.png
 
 # Rule graph showing workflow structure
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --rulegraph | dot -Tpng > workflow_rules.png
 
 # File graph showing input/output dependencies
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --filegraph | dot -Tpng > workflow_files.png
 ```
 
@@ -523,13 +523,13 @@ Run only certain steps of the pipeline:
 
 ```bash
 # Run only data loading and filtering
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --until filtering --cores 1
 
 # Run only the GO enrichment step
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --forcerun go_enrich --cores 1
 ```
 
@@ -539,13 +539,13 @@ Force re-running of specific steps or entire workflow:
 
 ```bash
 # Re-run entire workflow
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --forceall --cores 1
 
 # Re-run from a specific rule onwards
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --forcerun go_enrich --cores 1
 ```
 
@@ -555,14 +555,14 @@ snakemake --snakefile workflow/Snakefile_GO \
 
 ```bash
 # Basic SLURM submission
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "sbatch --time=02:00:00 --mem=16G --cpus-per-task=1" \
     --jobs 10
 
 # With custom resource allocation per rule
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "sbatch --time={resources.time} --mem={resources.mem_mb}M" \
     --default-resources time=60 mem_mb=8000 \
     --jobs 20
@@ -571,8 +571,8 @@ snakemake --snakefile workflow/Snakefile_batch_GO \
 ##### PBS/Torque Clusters
 
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "qsub -l walltime=02:00:00 -l mem=16gb" \
     --jobs 10
 ```
@@ -581,22 +581,22 @@ snakemake --snakefile workflow/Snakefile_batch_GO \
 
 ```bash
 # Detailed progress logging
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 4 \
     --printshellcmds \
     --verbose
 
 # Save logs to file
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 4 \
     2>&1 | tee snakemake_run.log
 ```
 
 ### Batch Configuration Example
 
-Here's a complete example of `workflow/config/batch_go_config.yaml`:
+Here's a complete example of `configs/templates/batch_go_config.yaml`:
 
 ```yaml
 # Output directory for all samples
@@ -649,16 +649,16 @@ samples:
 **Issue**: "MissingInputException: Missing input files"
 ```bash
 # Solution: Check if input files exist and paths are correct
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --dry-run --verbose
 ```
 
 **Issue**: "AmbiguousRuleException"
 ```bash
 # Solution: Be more specific with target files or rules
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --until rule_name --cores 1
 ```
 
@@ -675,14 +675,14 @@ For optimal performance when processing multiple samples:
 ```bash
 # Use appropriate core count (typically: number of samples or CPU cores)
 # Example: 8 samples on a 16-core machine
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 8
 
 # For cluster execution, match jobs to available nodes
 # Example: 50 samples on cluster with 10 available nodes
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "sbatch --time=02:00:00 --mem=16G" \
     --jobs 10
 ```
@@ -1166,7 +1166,7 @@ Each line contains:
 
 #### Using Custom Gene Sets in Analysis
 
-**In YAML configuration** (`workflow/config/gsea_config.yaml`):
+**In YAML configuration** (`configs/templates/gsea_config.yaml`):
 
 ```yaml
 gsea_analysis:

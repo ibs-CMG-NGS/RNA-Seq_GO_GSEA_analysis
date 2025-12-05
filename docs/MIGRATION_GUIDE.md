@@ -76,8 +76,8 @@ RNA-Seq_GO_GSEA_analysis/
 conda activate snakemake_env
 
 # Run batch analysis
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 4
 ```
 
@@ -132,16 +132,16 @@ If you have custom batch manifest files:
 
 1. Copy the template:
    ```bash
-   cp workflow/config/batch_go_config_template.yaml workflow/config/my_batch.yaml
+   cp configs/templates/batch_go_config_template.yaml configs/templates/my_batch.yaml
    ```
 
-2. Edit `workflow/config/my_batch.yaml` with your sample information
+2. Edit `configs/templates/my_batch.yaml` with your sample information
 
 3. Run with Snakemake:
    ```bash
    conda activate snakemake_env
-   snakemake --snakefile workflow/Snakefile_batch_GO \
-       --configfile workflow/config/my_batch.yaml \
+   snakemake --snakefile Snakefile_batch_GO \
+       --configfile configs/templates/my_batch.yaml \
        --cores 4
    ```
 
@@ -200,8 +200,8 @@ snakemake --version
 **Solution**: Check paths in config file - they should be relative to project root
 ```bash
 # Run dry-run to see what files Snakemake expects
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --dry-run
 ```
 
@@ -210,7 +210,7 @@ snakemake --snakefile workflow/Snakefile_batch_GO \
 - **Main README**: `README.md` - Complete documentation
 - **Workflow README**: `workflow/README.md` - Snakemake workflow details
 - **Quick Reference**: `workflow/QUICK_REFERENCE.md` - Common Snakemake commands
-- **Config Template**: `workflow/config/batch_go_config_template.yaml` - Example configuration
+- **Config Template**: `configs/templates/batch_go_config_template.yaml` - Example configuration
 
 ## Getting Help
 

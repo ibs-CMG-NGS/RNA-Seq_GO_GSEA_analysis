@@ -1,19 +1,29 @@
 # ============================================================
-# GO Analysis Pipeline - Default Configuration Template
+# GO Analysis Pipeline - Configuration Template
 # ============================================================
-# This is the DEFAULT template used by Snakefile_GO.
-# For project-specific configs, copy this to configs/ directory
-# and customize, then run:
-#   snakemake --snakefile workflow/Snakefile_GO \
-#             --configfile configs/YOUR_PROJECT.yaml \
-#             --cores 4
+# This is a TEMPLATE file. DO NOT use this directly with Snakemake.
+# 
+# To create a new project config:
+#   1. Copy this file to configs/ directory:
+#      cp configs/templates/go_config.yaml configs/GO_pipeline_MyProject.yaml
+#   
+#   2. Edit the copied file and customize:
+#      - ROOT_DIR: your output directory
+#      - data_loading.excel_path: your data file
+#      - data_loading.sheets: your sheet names
+#      - report.sample_name: your sample name
+#      - report.author: your name
+#   
+#   3. Run Snakemake with your config:
+#      snakemake --snakefile Snakefile_GO \
+#                --configfile configs/GO_pipeline_MyProject.yaml \
+#                --cores 4 --use-conda
 #
-# All paths are relative to PROJECT ROOT (where you run snakemake)
+# All paths are relative to PROJECT ROOT
 # ============================================================
 
-# Output directory - Snakemake will create intermediate files here
-# OVERRIDE THIS in your project-specific config
-ROOT_DIR: "output/go_analysis_default"
+# Output directory - Results will be saved here
+ROOT_DIR: "output/my_analysis"
 
 # ============================================================
 # Data Loading

@@ -4,54 +4,54 @@
 
 ### Dry Run (Always do this first!)
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --dry-run --printshellcmds
 ```
 
 ### Execute Workflow
 ```bash
 # Single core
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 1
 
 # Multiple cores (parallel execution)
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 4
 ```
 
 ### Visualize Workflow
 ```bash
 # Workflow DAG
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --dag | dot -Tpng > dag.png
 
 # Rule graph
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --rulegraph | dot -Tpng > rulegraph.png
 ```
 
 ### Run Specific Rules
 ```bash
 # Run up to a specific rule
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --until filtering --cores 1
 
 # Force re-run a specific rule
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --forcerun go_enrich --cores 1
 ```
 
 ### Cluster Execution (SLURM)
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "sbatch --time=02:00:00 --mem=16G --cpus-per-task=1" \
     --jobs 10
 ```
@@ -64,10 +64,10 @@ snakemake --snakefile workflow/Snakefile_batch_GO \
 
 ## Configuration Files
 
-- `workflow/config/go_config.yaml` - GO analysis config
-- `workflow/config/gsea_config.yaml` - GSEA analysis config
-- `workflow/config/batch_go_config.yaml` - Batch GO config
-- `workflow/config/batch_go_config_template.yaml` - Template for new batch configs
+- `configs/templates/go_config.yaml` - GO analysis config
+- `configs/templates/gsea_config.yaml` - GSEA analysis config
+- `configs/templates/batch_go_config.yaml` - Batch GO config
+- `configs/templates/batch_go_config_template.yaml` - Template for new batch configs
 
 ## Common Options
 
@@ -86,21 +86,21 @@ snakemake --snakefile workflow/Snakefile_batch_GO \
 
 ### Check if files exist
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --summary
 ```
 
 ### Clean up outputs (careful!)
 ```bash
 # Remove all output files
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --delete-all-output
 
 # Remove specific rule outputs
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --delete-output RULE
 ```
 

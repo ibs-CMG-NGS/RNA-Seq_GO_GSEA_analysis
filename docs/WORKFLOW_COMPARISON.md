@@ -106,8 +106,8 @@ python src/analysis/batch_runner.py \
 
 **Example**:
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-  --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+  --configfile configs/templates/batch_go_config.yaml \
   --cores 8
 ```
 
@@ -176,7 +176,7 @@ All methods are similar for single samples:
 ### For Experienced Users
 1. ✅ Jump straight to Snakemake
 2. ✅ Use helper scripts (`workflow/scripts/run_snakemake_go.sh`)
-3. ✅ Customize configs in `workflow/config/`
+3. ✅ Customize configs in `configs/templates/`
 4. ✅ Deploy to HPC for large-scale analyses
 
 ### For HPC Users
@@ -196,7 +196,7 @@ If you're currently using Python batch_runner.py:
 
 ### Phase 2: Gradual Adoption
 - Use Snakemake for new projects
-- Migrate existing configs to workflow/config/
+- Migrate existing configs to configs/templates/
 - Build confidence with workflow execution
 
 ### Phase 3: Full Migration
@@ -247,13 +247,13 @@ jupyter notebook notebooks/GO_Pipeline.ipynb
 python src/analysis/batch_runner.py --manifest configs/my_batch.yaml
 
 # Efficient batch (5+ samples)
-snakemake --snakefile workflow/Snakefile_batch_GO \
-  --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+  --configfile configs/templates/batch_go_config.yaml \
   --cores 4
 
 # HPC cluster (10+ samples)
-snakemake --snakefile workflow/Snakefile_batch_GO \
-  --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+  --configfile configs/templates/batch_go_config.yaml \
   --cluster "sbatch --time=02:00:00 --mem=16G" \
   --jobs 10
 ```

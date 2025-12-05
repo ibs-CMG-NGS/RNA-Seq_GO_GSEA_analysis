@@ -57,24 +57,24 @@ jupyter notebook
 **단일 샘플 분석:**
 ```bash
 # GO 농축 분석
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --cores 1
 
 # GSEA 분석
-snakemake --snakefile workflow/Snakefile_GSEA \
-    --configfile workflow/config/gsea_config.yaml \
+snakemake --snakefile Snakefile_GSEA \
+    --configfile configs/templates/gsea_config.yaml \
     --cores 1
 ```
 
 **배치 분석 (여러 샘플 병렬 처리):**
 ```bash
 # 설정 파일 편집
-nano workflow/config/batch_go_config.yaml
+nano configs/templates/batch_go_config.yaml
 
 # 배치 GO 분석 실행
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cores 4
 ```
 
@@ -94,21 +94,21 @@ Snakemake는 재현성과 확장성을 제공하는 워크플로우 관리 시�
 
 ```bash
 # Dry-run (실행될 내용 확인)
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --dry-run
 
 # 워크플로우 시각화 (graphviz 필요)
-snakemake --snakefile workflow/Snakefile_GO \
-    --configfile workflow/config/go_config.yaml \
+snakemake --snakefile Snakefile_GO \
+    --configfile configs/templates/go_config.yaml \
     --dag | dot -Tpng > workflow_dag.png
 ```
 
 ### HPC 클러스터 실행 (SLURM)
 
 ```bash
-snakemake --snakefile workflow/Snakefile_batch_GO \
-    --configfile workflow/config/batch_go_config.yaml \
+snakemake --snakefile Snakefile_batch_GO \
+    --configfile configs/templates/batch_go_config.yaml \
     --cluster "sbatch --time=02:00:00 --mem=16G" \
     --jobs 10
 ```
@@ -283,7 +283,7 @@ GLUTAMATE_RECEPTORS    Glutamatergic_Signaling    Grin1    Grin2a    Grin2b    G
 
 #### 분석에서 사용자 정의 Gene Set 사용하기
 
-**YAML 설정에서** (`workflow/config/gsea_config.yaml`):
+**YAML 설정에서** (`configs/templates/gsea_config.yaml`):
 
 ```yaml
 gsea_analysis:

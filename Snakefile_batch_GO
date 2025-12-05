@@ -4,7 +4,7 @@ Process multiple samples efficiently
 """
 
 # Configuration
-# configfile: "workflow/config/batch_go_config_H2O2_neuron.yaml"
+# configfile: "configs/templates/batch_go_config_H2O2_neuron.yaml"
 # Note: Use --configfile option when running snakemake instead
 
 # Get sample list from config
