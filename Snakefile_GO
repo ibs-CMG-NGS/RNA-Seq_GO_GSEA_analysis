@@ -32,10 +32,6 @@ if not config:
         "Please run with: snakemake --snakefile Snakefile_GO "
         "--configfile configs/YOUR_PROJECT.yaml --cores 4"
     )
-        "No configuration file provided!\n"
-        "Please run with: snakemake --snakefile workflow/Snakefile_GO "
-        "--configfile configs/YOUR_PROJECT.yaml --cores 4"
-    )
 
 # Define the output directory
 OUTPUT_DIR = config.get("ROOT_DIR", "output/go_analysis")
