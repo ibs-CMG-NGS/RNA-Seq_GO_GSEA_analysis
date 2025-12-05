@@ -122,11 +122,11 @@ def _parse_args(argv=None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="GO enrichment with GOATOOLS")
     p.add_argument("--config", default=None, help="pipeline.yaml or go_enrich.yaml")
     p.add_argument("--config-section", default="go_enrich", help="YAML section name")
-    src = p.add_mutually_exclusive_group()
-    src.add_argument("--genes-file", help="Single gene list file for analysis.")
-    src.add_argument("--filtered-csv", help="Filtered CSV to extract all genes.")
-    src.add_argument("--up-genes-file", help="Gene list for up-regulated set.")
-    src.add_argument("--down-genes-file", help="Gene list for down-regulated set.")
+    # Allow multiple gene list inputs (not mutually exclusive)
+    p.add_argument("--genes-file", help="Single gene list file for analysis.")
+    p.add_argument("--filtered-csv", help="Filtered CSV to extract all genes.")
+    p.add_argument("--up-genes-file", help="Gene list for up-regulated set.")
+    p.add_argument("--down-genes-file", help="Gene list for down-regulated set.")
 
     p.add_argument("--background-csv", default=None)
     p.add_argument("--obo", default=None)
@@ -142,7 +142,13 @@ def _parse_args(argv=None) -> argparse.Namespace:
 
 def _main(argv=None) -> None:
     args = _parse_args(argv)
-    cfg_all = get_cfg(args.config) or {}
+    
+    # Resolve config file path if needed
+    config_path = args.config
+    if config_path and not Path(config_path).is_absolute():
+        config_path = str(Path.cwd() / config_path)
+    
+    cfg_all = get_cfg(config_path) or {}
     cfg_section = cfg_all.get(args.config_section, cfg_all)
     
     # --- Analysis parameters from config ---
@@ -151,19 +157,23 @@ def _main(argv=None) -> None:
     taxon = pick(args.taxon, cfg_section, "taxon", "9606")
 
     # --- Reference files (project-root-relative) ---
-    obo_paths = resolve_path(
-        cli_path=[args.obo] if args.obo else None,
-        cfg=cfg_all, config_key="obo", config_section=args.config_section,
-        is_input=True
-    )
-    obo = obo_paths[0] if obo_paths else None
-
-    gaf_paths = resolve_path(
-        cli_path=[args.gaf] if args.gaf else None,
-        cfg=cfg_all, config_key="gaf", config_section=args.config_section,
-        is_input=True
-    )
-    gaf = gaf_paths[0] if gaf_paths else None
+    # Get OBO file path
+    if args.obo:
+        obo = str(Path.cwd() / args.obo) if not Path(args.obo).is_absolute() else args.obo
+    elif 'obo' in cfg_section:
+        obo_cfg = cfg_section['obo']
+        obo = str(Path.cwd() / obo_cfg) if not Path(obo_cfg).is_absolute() else obo_cfg
+    else:
+        raise SystemExit("Error: OBO file path required (via --obo or config)")
+    
+    # Get GAF file path
+    if args.gaf:
+        gaf = str(Path.cwd() / args.gaf) if not Path(args.gaf).is_absolute() else args.gaf
+    elif 'gaf' in cfg_section:
+        gaf_cfg = cfg_section['gaf']
+        gaf = str(Path.cwd() / gaf_cfg) if not Path(gaf_cfg).is_absolute() else gaf_cfg
+    else:
+        raise SystemExit("Error: GAF file path required (via --gaf or config)")
 
     if not obo or not gaf:
         raise SystemExit("Error: GO reference files (obo, gaf) are required")

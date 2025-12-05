@@ -11,14 +11,14 @@
 # ============================================================
 
 # Output directory - Snakemake will create intermediate files here
-ROOT_DIR: "data/processed/Shank2"
+ROOT_DIR: "output/Shank2_3WHT"
 
 # ============================================================
 # Data Loading
 # ============================================================
 data_loading:
   # Input data source
-  excel_path: "data/processed/Shank2/Shank2_RNA-seq_result.xlsx"
+  excel_path: "data/Shank2_RNA-seq_result.xlsx"
   sheets: "3W-HT" # or "all"
   
   # Column mapping from Excel to standardized format
