@@ -217,8 +217,19 @@ def _parse_args(argv=None) -> argparse.Namespace:
 
 def _main(argv=None) -> None:
     args = _parse_args(argv)
-    cfg_all = get_cfg(args.config) or {}
+    
+    # Resolve config file path relative to cwd if needed
+    config_path = args.config
+    if config_path and not Path(config_path).is_absolute():
+        config_path = str(PROJECT_ROOT / config_path)
+    
+    cfg_all = get_cfg(config_path) or {}
     cfg_section = cfg_all.get(args.config_section, {})
+
+    # Debug: Log configuration
+    logging.info(f"Config file: {config_path}")
+    logging.info(f"Config section: {args.config_section}")
+    logging.info(f"Config section content: {cfg_section}")
 
     # --- 1. Load configuration parameters ---
     # Determine project root for path resolution
@@ -228,11 +239,16 @@ def _main(argv=None) -> None:
     else:
         root_path = PROJECT_ROOT
     
+    logging.info(f"Project root (cwd): {PROJECT_ROOT}")
+    logging.info(f"ROOT_DIR from config: {root_dir}")
+    
     # Excel input paths - can come from CLI or config
     if args.excels:
         excel_paths = [str(PROJECT_ROOT / p if not Path(p).is_absolute() else p) for p in args.excels]
+        logging.info(f"Excel paths from CLI args: {args.excels}")
     elif 'excel_path' in cfg_section:
         excel_path = cfg_section['excel_path']
+        logging.info(f"Excel path from config: {excel_path}")
         # Handle both single file and list of files
         if isinstance(excel_path, list):
             excel_paths = [str(PROJECT_ROOT / p if not Path(p).is_absolute() else p) for p in excel_path]
@@ -241,7 +257,9 @@ def _main(argv=None) -> None:
             if not excel_path_obj.is_absolute():
                 excel_path_obj = PROJECT_ROOT / excel_path
             excel_paths = [str(excel_path_obj)]
+        logging.info(f"Resolved excel paths: {excel_paths}")
     else:
+        logging.error(f"No excel_path found. Config section keys: {list(cfg_section.keys())}")
         raise SystemExit("Error: Excel file path required (via --excels or config 'excel_path')")
     
     # Output CSV - CLI arg takes precedence, config as fallback
