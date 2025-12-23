@@ -1,0 +1,81 @@
+"""
+Snakemake workflow for GSEA analysis pipeline
+"""
+
+# Configuration
+configfile: "workflow/config/gsea_config.yaml"
+
+# Define the output directory
+OUTPUT_DIR = config.get("ROOT_DIR", "output/gsea_analysis")
+ROOT_DIR = config.get("ROOT_DIR", "output/gsea_analysis")
+
+# path to conda environment yaml
+CONDA_ENV = "rna-seq-go-gsea-analysis"
+
+# Define all output files from the pipeline
+rule all:
+    input:
+        standardized = f"{OUTPUT_DIR}/standardized.csv",
+        gsea_report = f"{OUTPUT_DIR}/GSEA_Report.xlsx",
+        plots_dir = directory(f"{OUTPUT_DIR}/plots")
+
+# Rule 1: Data loading
+rule data_loading:
+    output:
+        csv = f"{OUTPUT_DIR}/standardized.csv"
+    params:
+        config = "workflow/config/gsea_config.yaml",
+        section = "data_loading"
+    log:
+        f"{OUTPUT_DIR}/logs/data_loading.log"
+    shell:
+        """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
+        python src/analysis/data_loading.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """
+
+# Rule 2: GSEA analysis
+rule gsea_analysis:
+    input:
+        csv = f"{OUTPUT_DIR}/standardized.csv"
+    output:
+        report = f"{OUTPUT_DIR}/GSEA_Report.xlsx",
+    params:
+        config = "workflow/config/gsea_config.yaml",
+        section = "gsea"
+    log:
+        f"{OUTPUT_DIR}/logs/gsea_analysis.log"
+    shell:
+        """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
+        python src/analysis/gsea_analysis.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """
+
+# Rule 3: GSEA plotting
+rule gsea_plot:
+    input:
+        report = f"{OUTPUT_DIR}/GSEA_Report.xlsx"
+    output:
+        plots_dir = directory(f"{OUTPUT_DIR}/plots")
+    params:
+        config = "workflow/config/gsea_config.yaml",
+        section = "gsea_plot"
+    log:
+        f"{OUTPUT_DIR}/logs/gsea_plot.log"
+    shell:
+        """
+        source $(conda info --base)/etc/profile.d/conda.sh
+        conda activate {CONDA_ENV}
+        python src/analysis/gsea_plot.py \
+            --config {params.config} \
+            --config-section {params.section} \
+            2>&1 | tee {log}
+        """

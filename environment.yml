@@ -1,0 +1,21 @@
+name: rna-seq-go-gsea-analysis
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # Conda가 설치하도록 위로 이동
+  - python=3.11
+  - openpyxl>=3.1.2
+  - numpy>=1.26.0
+  - pandas>=2.1.0
+  - scipy
+  - matplotlib>=3.8.0
+  - seaborn
+  - gseapy>=1.1.3
+  - statsmodels  # (log에 statsmodels도 보였습니다)
+  - goatools
+  - pip
+  # pip은 conda-forge/bioconda에 없는 패키지만 설치하도록 최소화
+  - pip:
+    - git+https://github.com/parkgilbong/YG_utils_analysis.git@main
