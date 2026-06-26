@@ -4,6 +4,9 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  # Pipeline orchestration
+  - snakemake
+
   # Conda가 설치하도록 위로 이동
   - python=3.11
   - openpyxl>=3.1.2

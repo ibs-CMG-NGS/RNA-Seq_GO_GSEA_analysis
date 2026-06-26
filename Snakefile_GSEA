@@ -30,9 +30,6 @@ ROOT_DIR = config.get("ROOT_DIR", "output/gsea_analysis")
 GSEA_SECTION = config.get("gsea", {})
 GSEA_OUTPUT_FILE = GSEA_SECTION.get("output_excel_file", "GSEA_Report.xlsx")
 
-# path to conda environment yaml
-CONDA_ENV = "rna-seq-go-gsea-analysis"
-
 # Define all output files from the pipeline
 rule all:
     input:
@@ -52,8 +49,6 @@ rule data_loading:
         f"{OUTPUT_DIR}/logs/data_loading.log"
     shell:
         """
-        source $(conda info --base)/etc/profile.d/conda.sh
-        conda activate {CONDA_ENV}
         python src/analysis/data_loading.py \
             --config {params.config} \
             --config-section {params.section} \
@@ -74,8 +69,6 @@ rule gsea_analysis:
         f"{OUTPUT_DIR}/logs/gsea_analysis.log"
     shell:
         """
-        source $(conda info --base)/etc/profile.d/conda.sh
-        conda activate {CONDA_ENV}
         python src/analysis/gsea_analysis.py \
             --config {params.config} \
             --config-section {params.section} \
@@ -95,8 +88,6 @@ rule gsea_plot:
         f"{OUTPUT_DIR}/logs/gsea_plot.log"
     shell:
         """
-        source $(conda info --base)/etc/profile.d/conda.sh
-        conda activate {CONDA_ENV}
         python src/analysis/gsea_plot.py \
             --config {params.config} \
             --config-section {params.section} \

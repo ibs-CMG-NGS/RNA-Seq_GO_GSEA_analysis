@@ -12,9 +12,6 @@ SAMPLES = config.get("samples", [])
 SAMPLE_NAMES = [s["name"] for s in SAMPLES]
 OUTPUT_ROOT = config.get("output_root", "results/batch_gsea_analysis")
 
-# path to conda environment yaml
-CONDA_ENV = "rna-seq-go-gsea-analysis"
-
 # Rule to process all samples
 rule all:
     input:
@@ -72,8 +69,6 @@ rule data_loading:
         
         # Execute data loading
         shell(f"""
-            source $(conda info --base)/etc/profile.d/conda.sh
-            conda activate {CONDA_ENV}
             export PIPELINE_LOG_FILE={pipeline_log}
             python src/analysis/data_loading.py \
                 --config {temp_config_path} \
@@ -93,9 +88,7 @@ rule gsea_analysis:
         f"{OUTPUT_ROOT}/{{sample}}/logs/gsea_analysis.log"
     shell:
         """
-        source $(conda info --base)/etc/profile.d/conda.sh
-        conda activate {CONDA_ENV}
-        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
+export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/gsea_analysis.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section gsea \
@@ -114,9 +107,7 @@ rule gsea_plot:
         f"{OUTPUT_ROOT}/{{sample}}/logs/gsea_plot.log"
     shell:
         """
-        source $(conda info --base)/etc/profile.d/conda.sh
-        conda activate {CONDA_ENV}
-        export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
+export PIPELINE_LOG_FILE={OUTPUT_ROOT}/{params.sample}/logs/pipeline.log
         python src/analysis/gsea_plot.py \
             --config {OUTPUT_ROOT}/{params.sample}/temp_config.yaml \
             --config-section gsea_plot \
